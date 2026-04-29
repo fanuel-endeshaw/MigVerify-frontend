@@ -8,8 +8,12 @@ import {
   Stack,
   TextField,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+// import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+// import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
@@ -44,14 +48,8 @@ export default function Registration() {
     });
   };
 
-  const buildHeaders = (extraHeaders = {}) => ({
-    Authorization: `Bearer ${token}`,
-    ...extraHeaders,
-  });
-
   const handleCreateUser = async (event) => {
     event.preventDefault();
-
     if (!form.photoFile) {
       setRegistrationError("Please upload a profile photo before submitting.");
       return;
@@ -70,23 +68,17 @@ export default function Registration() {
 
       const response = await fetch(`${apiBaseUrl}/api/users/register`, {
         method: "POST",
-        headers: buildHeaders(),
+        headers: { Authorization: `Bearer ${token}` },
         body: payload,
       });
 
       const payloadJson = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(
-          payloadJson?.message || payloadJson?.error || "Registration failed.",
-        );
+        throw new Error(payloadJson?.message || "Registration failed.");
       }
 
-      sessionStorage.setItem(
-        "migVerifyToast",
-        payloadJson?.message || "User registered successfully.",
-      );
-
+      sessionStorage.setItem("migVerifyToast", "User registered successfully.");
       resetRegistrationForm();
       navigate("/dashboard/users");
     } catch (error) {
@@ -111,162 +103,213 @@ export default function Registration() {
     reader.readAsDataURL(file);
   };
 
-  const handleClearRegistration = () => {
-    resetRegistrationForm();
-  };
-
   return (
-    <Stack spacing={2}>
-      <Typography variant="h4" fontWeight={700}>
-        New User Registration
-      </Typography>
-      <Typography color="text.secondary">
-        Capture complete identity details in a secure and professional intake
-        workflow.
-      </Typography>
+    <Box sx={{ width: "100%", py: 2 }}>
+      {/* Header - Left Aligned */}
+      <Stack spacing={0.5} sx={{ mb: 4 }}>
+        <Typography variant="h4" fontWeight={800} letterSpacing="-0.5px">
+          New User Registration
+        </Typography>
+        <Typography color="text.secondary" variant="body1">
+          Complete the fields below to register a new identity in the system.
+        </Typography>
+      </Stack>
 
-      <Paper sx={{ p: 3 }}>
-        <Box
-          component="form"
-          onSubmit={handleCreateUser}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            // bgcolor: "#f5f5f5",
-            borderRadius: 2,
-            p: 3,
-          }}
-        >
-          {registrationError ? (
-            <Alert severity="warning">{registrationError}</Alert>
-          ) : null}
+      <Box component="form" onSubmit={handleCreateUser}>
+        <Grid container spacing={3}>
+          {/* Left Column: Main Form Data */}
+          <Grid item xs={12} md={8}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 4,
+                borderRadius: 3,
+                border: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
+                Personal Details
+              </Typography>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Full Name"
-                required
-                fullWidth
-                value={form.fullName}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, fullName: event.target.value }))
-                }
-              />
-            </Grid>
+              {registrationError && (
+                <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                  {registrationError}
+                </Alert>
+              )}
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="ID Number"
-                required
-                fullWidth
-                value={form.id_number}
-                onChange={(event) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    id_number: event.target.value,
-                  }))
-                }
-              />
-            </Grid>
+              <Grid container spacing={2.5}>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Full Name"
+                    required
+                    fullWidth
+                    value={form.fullName}
+                    onChange={(e) =>
+                      setForm({ ...form, fullName: e.target.value })
+                    }
+                  />
+                </Grid>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Date of Birth"
-                type="date"
-                required
-                fullWidth
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="ID Number"
+                    required
+                    fullWidth
+                    value={form.id_number}
+                    onChange={(e) =>
+                      setForm({ ...form, id_number: e.target.value })
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Date of Birth"
+                    type="date"
+                    required
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    sx={{
+                      "& input::-webkit-datetime-edit-month-field, & input::-webkit-datetime-edit-day-field, & input::-webkit-datetime-edit-year-field, & input::-webkit-datetime-edit-text":
+                        {
+                          color: form.dateOfBirth ? "inherit" : "transparent",
+                        },
+                    }}
+                    value={form.dateOfBirth}
+                    onChange={(e) =>
+                      setForm({ ...form, dateOfBirth: e.target.value })
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    label="Full Address"
+                    required
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={form.address}
+                    onChange={(e) =>
+                      setForm({ ...form, address: e.target.value })
+                    }
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+
+          {/* Right Column: Photo & Actions */}
+          <Grid item xs={12} md={4}>
+            <Stack spacing={3}>
+              {/* Photo Card */}
+              <Paper
+                elevation={0}
                 sx={{
-                  "&input::-webkit-datetime-edit-*-field:not([aria-valuenow])":
-                    {
-                      color: "transparent",
-                    },
-                }}
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ placeholder: " hello" }}
-                value={form.dateOfBirth}
-                onChange={(event) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    dateOfBirth: event.target.value,
-                  }))
-                }
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                label="Address"
-                required
-                fullWidth
-                multiline
-                minRows={3}
-                value={form.address}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, address: event.target.value }))
-                }
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Button
-                component="label"
-                variant="outlined"
-                fullWidth
-                startIcon={<UploadFileOutlinedIcon />}
-                sx={{
-                  height: "56px",
-                  justifyContent: "flex-start",
-                  pl: 2,
+                  p: 3,
+                  textAlign: "center",
+                  borderRadius: 3,
+                  border: "1px solid",
+                  borderColor: "divider",
                 }}
               >
-                {form.photo ? "Photo Selected" : "Upload Photo (File)"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={handlePhotoUpload}
-                />
-              </Button>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              {form.photo ? (
-                <Stack direction="row" alignItems="center" spacing={2}>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={700}
+                  sx={{ mb: 2, textAlign: "left" }}
+                >
+                  Profile Photo
+                </Typography>
+                <Box sx={{ position: "relative", display: "inline-block" }}>
                   <Avatar
                     src={form.photo}
-                    alt={form.fullName || "User photo"}
-                  />
-                  <Typography color="text.secondary" variant="body2">
-                    Photo attached and ready for submission.
-                  </Typography>
-                </Stack>
-              ) : (
-                <Typography color="text.secondary" variant="body2">
-                  No photo uploaded yet.
-                </Typography>
-              )}
-            </Grid>
+                    sx={{
+                      width: 120,
+                      height: 120,
+                      mx: "auto",
+                      mb: 2,
+                      border: "2px solid",
+                      borderColor: "primary.main",
+                      bgcolor: "grey.50",
+                    }}
+                  >
+                    {!form.photo && (
+                      <UploadFileOutlinedIcon
+                        sx={{ fontSize: 40, color: "text.disabled" }}
+                      />
+                    )}
+                  </Avatar>
+                </Box>
 
-            <Grid item xs={12}>
-              <Stack direction="row" spacing={2} justifyContent="flex-end">
-                <Button variant="outlined" onClick={handleClearRegistration}>
-                  Clear
-                </Button>
                 <Button
-                  variant="contained"
-                  type="submit"
-                  disabled={registrationLoading}
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  startIcon={<UploadFileOutlinedIcon />}
+                  sx={{ borderRadius: 2 }}
                 >
-                  {registrationLoading
-                    ? "Submitting..."
-                    : "Submit Registration"}
+                  {form.photo ? "Change Photo" : "Upload Photo"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={handlePhotoUpload}
+                  />
                 </Button>
-              </Stack>
-            </Grid>
+              </Paper>
+
+              {/* Action Card */}
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  bgcolor: "grey.50",
+                }}
+              >
+                <Stack spacing={2}>
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    fullWidth
+                    size="large"
+                    disabled={registrationLoading}
+                    startIcon={
+                      registrationLoading ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        <PersonAddAlt1Icon />
+                      )
+                    }
+                    sx={{
+                      py: 1.5,
+                      borderRadius: 2,
+                      fontWeight: 700,
+                      textTransform: "none",
+                      fontSize: "1rem",
+                    }}
+                  >
+                    {registrationLoading
+                      ? "Processing..."
+                      : "Complete Registration"}
+                  </Button>
+                  <Button
+                    variant="text"
+                    color="inherit"
+                    onClick={resetRegistrationForm}
+                    sx={{ textTransform: "none", fontWeight: 600 }}
+                  >
+                    Discard Changes
+                  </Button>
+                </Stack>
+              </Paper>
+            </Stack>
           </Grid>
-        </Box>
-      </Paper>
-    </Stack>
+        </Grid>
+      </Box>
+    </Box>
   );
 }
