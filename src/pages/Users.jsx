@@ -28,6 +28,7 @@ import {
   Tooltip,
   useTheme,
 } from "@mui/material";
+
 import {
   DeleteOutlined as DeleteIcon,
   VisibilityOutlined as ViewIcon,
@@ -35,6 +36,7 @@ import {
   ShareOutlined as ShareIcon,
   Add as AddIcon,
 } from "@mui/icons-material";
+import { deleteUserBackend } from "../auth/session"; // ✅ added
 import { useEffect, useMemo, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { fetchUsers } from "../auth/session";
@@ -42,19 +44,24 @@ import { useAuth } from "../auth/useAuth";
 import { useNavigate } from "react-router-dom";
 
 const USERS_PER_PAGE = 8;
-// const API_BASE_URL = "http://192.168.137.232:5000";
 
-// Standardize data keys safely
+// ✅ Normalize user including qr_token
 const normalizeUser = (s = {}) => ({
   ...s,
+
   id:
     s.id ||
     s.user_id ||
     s.uuid ||
     `USR-${Math.random().toString(36).substr(2, 9)}`,
+
   name: s.name || s.fullName || s.full_name || "Unknown User",
-  id_number: s.id_number || s.idNumber || "N/A",
-  status: s.status || "Pending",
+
+  // keep searchable but don't fake it too much
+  id_number: s.id_number ?? s.idNumber ?? "",
+
+  // ✅ STRICT: always use backend field
+  qrToken: s.qr_token,
 });
 
 export default function Users() {
@@ -68,18 +75,24 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
-  // eslint-disable-next-line no-unused-vars
-  const [deleteTarget, setDeleteTarget] = useState(null);
   const [toast, setToast] = useState("");
-
-  // Data Fetching
+  useEffect(() => {
+    console.log(selectedUser);
+  }, [selectedUser]);
+  // ✅ Fetch users
   useEffect(() => {
     let active = true;
+
     const loadData = async () => {
       try {
         setLoading(true);
         const data = await fetchUsers(token);
+        console.log("**************data*******************8");
+        console.log(data.user[9]);
+        console.log("**************data*******************8");
+
         const list = data?.user || data || [];
+
         if (active) setUsers(list.map(normalizeUser));
       } catch (err) {
         if (active) setError(err.message || "Failed to sync users.");
@@ -87,13 +100,14 @@ export default function Users() {
         if (active) setLoading(false);
       }
     };
+
     loadData();
     return () => {
       active = false;
     };
   }, [token]);
 
-  // Search Logic
+  // ✅ Search
   const filteredUsers = useMemo(() => {
     const q = query.toLowerCase();
     return users.filter(
@@ -107,264 +121,211 @@ export default function Users() {
     (page - 1) * USERS_PER_PAGE,
     page * USERS_PER_PAGE,
   );
+  //  delete
+  const handleDelete = async (user) => {
+    if (!window.confirm(`Delete ${user.name}?`)) return;
+
+    try {
+      // ✅ backend expects id_number
+      await deleteUserBackend(user.id_number, token);
+
+      // ✅ update UI
+      setUsers((prev) => prev.filter((u) => u.id_number !== user.id_number));
+
+      setToast("User deleted successfully");
+    } catch (err) {
+      setToast(err.message || "Delete failed");
+    }
+  };
+  // ✅ SHARE QR FUNCTION
+  const handleShareQR = async () => {
+    const canvas = document.getElementById("qr-code");
+    if (!canvas) return;
+
+    const dataUrl = canvas.toDataURL("image/png");
+
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], "qr-code.png", { type: "image/png" });
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "User QR Code",
+          files: [file],
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = "qr-code.png";
+      link.click();
+    }
+  };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 2 }, maxWidth: 1200, mx: "auto" }}>
-      {/* Header Section */}
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={4}
-      >
+    <Box sx={{ p: 2, maxWidth: 1200, mx: "auto" }}>
+      {/* HEADER */}
+      <Stack direction="row" justifyContent="space-between" mb={4}>
         <Box>
-          <Typography
-            variant="h4"
-            fontWeight={800}
-            sx={{ py: 1 }}
-            color="text.primary"
-          >
+          <Typography variant="h4" fontWeight={800}>
             User Management
           </Typography>
-          <Typography variant="body2" sx={{ pb: 1 }} color="text.secondary">
-            View and manage identity profiles within the system.
+          <Typography color="text.secondary">
+            Manage identity profiles
           </Typography>
         </Box>
       </Stack>
 
-      {/* Filter Bar */}
-      <Stack
-        elevation={0}
-        spacing={2}
-        sx={{
-          // p: 2,
-          mb: 3,
-          // border: "1px solid",
-          // borderColor: "divider",
-          borderRadius: 3,
-        }}
-        direction={{ xs: "column", md: "row" }}
-      >
+      {/* SEARCH */}
+      <Stack direction={{ xs: "column", md: "row" }} spacing={2} mb={3}>
         <TextField
-          // fullWidth
-          variant="outlined"
-          placeholder="Search by name or ID number..."
+          placeholder="Search..."
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
             setPage(1);
           }}
           InputProps={{
-            startAdornment: (
-              <SearchIcon sx={{ color: "text.disabled", mr: 1 }} />
-            ),
+            startAdornment: <SearchIcon sx={{ mr: 1 }} />,
           }}
-          sx={{
-            width: { xs: "100%", md: "70%" },
-            "& .MuiOutlinedInput-root": { borderRadius: 2 },
-          }}
+          sx={{ flex: 1 }}
         />
+
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => navigate("/dashboard/registration")}
-          sx={{
-            backgroundColor: "black",
-            borderRadius: 2,
-            px: 3,
-            boxShadow: theme.shadows[4],
-          }}
+          sx={{ background: "black" }}
         >
-          Register User
+          Register
         </Button>
       </Stack>
 
-      {/* Main Content Area */}
-      <Paper
-        elevation={0}
-        sx={{
-          border: "1px solid",
-          borderColor: "divider",
-          // borderRadius: 3,
-          overflow: "hidden",
-        }}
-      >
+      {/* TABLE */}
+      <Paper>
         {loading ? (
-          <Box sx={{ p: 10, textAlign: "center" }}>
-            <CircularProgress size={40} thickness={4} />
-            <Typography sx={{ mt: 2 }} color="text.secondary">
-              Fetching secure data...
-            </Typography>
+          <Box textAlign="center" p={5}>
+            <CircularProgress />
           </Box>
         ) : error ? (
-          <Box sx={{ p: 4 }}>
-            <Alert severity="error">{error}</Alert>
-          </Box>
+          <Alert severity="error">{error}</Alert>
         ) : (
           <TableContainer>
             <Table>
-              <TableHead sx={{ bgcolor: "action.hover" }}>
+              <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600 }}>User</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>System ID</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>ID Number</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600 }}>
-                    Actions
-                  </TableCell>
+                  <TableCell>User</TableCell>
+                  <TableCell>ID</TableCell>
+                  <TableCell>ID Number</TableCell>
+                  <TableCell align="right">Actions</TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {paginatedUsers.map((user) => (
-                  <TableRow key={user.id} hover>
+                  <TableRow key={user.id}>
                     <TableCell>
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <Avatar src={user.photo} sx={{ width: 40, height: 40 }}>
-                          {user.name[0]}
-                        </Avatar>
-                        <Typography variant="body2" fontWeight={600}>
-                          {user.name}
-                        </Typography>
+                      <Stack direction="row" spacing={2}>
+                        <Avatar>{user.name[0]}</Avatar>
+                        <Typography>{user.name}</Typography>
                       </Stack>
                     </TableCell>
-                    <TableCell>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontFamily: "monospace",
-                          bgcolor: "grey.100",
-                          p: 0.5,
-                        }}
-                      >
-                        {user.id}
-                      </Typography>
-                    </TableCell>
+
+                    <TableCell>{user.id}</TableCell>
                     <TableCell>{user.id_number}</TableCell>
 
-                    <TableCell align="right">
-                      <Tooltip title="View Profile">
-                        <IconButton
-                          onClick={() => setSelectedUser(user)}
-                          color="primary"
-                        >
-                          <ViewIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <IconButton
-                          onClick={() => setDeleteTarget(user)}
-                          color="error"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
+                    <TableCell align="right" onClick={() => handleDelete(user)}>
+                      <IconButton onClick={() => setSelectedUser(user)}>
+                        <ViewIcon />
+                      </IconButton>
+
+                      <IconButton color="error">
+                        <DeleteIcon />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-            {filteredUsers.length === 0 && (
-              <Typography
-                sx={{ p: 4, textAlign: "center" }}
-                color="text.secondary"
-              >
-                No matching records found.
-              </Typography>
-            )}
           </TableContainer>
         )}
 
-        <Divider />
-
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          p={2}
-          alignItems="center"
-        >
-          <Typography variant="caption" color="text.secondary">
-            Total Records: {filteredUsers.length}
+        <Stack direction="row" justifyContent="space-between" p={2}>
+          <Typography variant="caption">
+            Total: {filteredUsers.length}
           </Typography>
+
           <Pagination
             count={Math.ceil(filteredUsers.length / USERS_PER_PAGE)}
             page={page}
             onChange={(_, v) => setPage(v)}
-            color="primary"
-            shape="rounded"
           />
         </Stack>
       </Paper>
 
-      {/* User Detail Dialog */}
+      {/* ✅ BEAUTIFUL DIALOG */}
       <Dialog
         open={!!selectedUser}
         onClose={() => setSelectedUser(null)}
         maxWidth="sm"
         fullWidth
+        PaperProps={{ sx: { borderRadius: 4 } }}
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>Profile Intelligence</DialogTitle>
-        <DialogContent dividers>
-          {selectedUser && (
-            <Stack spacing={3} sx={{ py: 1 }}>
-              <Stack direction="row" spacing={3} alignItems="center">
-                <Avatar
-                  src={selectedUser.photo}
-                  sx={{
-                    width: 100,
-                    height: 100,
-                    border: "4px solid",
-                    borderColor: "primary.light",
-                  }}
-                >
-                  {selectedUser.name[0]}
-                </Avatar>
-                <Box>
-                  <Typography variant="h5" fontWeight={700}>
-                    {selectedUser.name}
-                  </Typography>
-                  <Typography color="text.secondary" gutterBottom>
-                    {selectedUser.id_number}
-                  </Typography>
-                  <Chip
-                    label={selectedUser.status}
-                    color="primary"
-                    size="small"
-                  />
-                </Box>
-              </Stack>
+        <DialogTitle fontWeight={800}>User Profile</DialogTitle>
 
-              <Card
-                variant="outlined"
-                sx={{ bgcolor: "grey.50", borderRadius: 2 }}
-              >
+        <DialogContent>
+          {selectedUser && (
+            <Stack spacing={3} alignItems="center" py={2}>
+              <Avatar sx={{ width: 110, height: 110 }}>
+                {selectedUser.name[0]}
+              </Avatar>
+
+              <Box textAlign="center">
+                <Typography variant="h5" fontWeight={700}>
+                  {selectedUser.name}
+                </Typography>
+                <Typography color="text.secondary">
+                  {selectedUser.id_number}
+                </Typography>
+              </Box>
+
+              <Chip label={selectedUser.status} />
+
+              {/* QR */}
+              <Card sx={{ width: "100%" }}>
                 <CardContent>
-                  <Typography variant="overline" color="text.secondary">
-                    Identity Token
+                  <Typography align="center" gutterBottom>
+                    Scan QR
                   </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      mt: 2,
-                      p: 2,
-                      bgcolor: "#fff",
-                      borderRadius: 2,
-                    }}
-                  >
-                    <QRCodeCanvas
-                      value={selectedUser.qrToken || selectedUser.id}
-                      size={180}
-                    />
+
+                  <Box textAlign="center">
+                    {selectedUser.qrToken ? (
+                      <QRCodeCanvas
+                        id="qr-code"
+                        value={selectedUser.qrToken}
+                        size={200}
+                        level="H"
+                        includeMargin
+                      />
+                    ) : (
+                      <Typography color="error">Missing QR Token</Typography>
+                    )}
                   </Box>
                 </CardContent>
               </Card>
             </Stack>
           )}
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button startIcon={<ShareIcon />} variant="outlined">
-            Share PDF
+
+        <DialogActions>
+          <Button startIcon={<ShareIcon />} onClick={handleShareQR}>
+            Share QR
           </Button>
-          <Button onClick={() => setSelectedUser(null)} variant="contained">
+
+          <Button variant="contained" onClick={() => setSelectedUser(null)}>
             Close
           </Button>
         </DialogActions>
@@ -372,9 +333,9 @@ export default function Users() {
 
       <Snackbar
         open={!!toast}
+        message={toast}
         autoHideDuration={4000}
         onClose={() => setToast("")}
-        message={toast}
       />
     </Box>
   );
