@@ -39,7 +39,17 @@ export default function Registration() {
       [field]: e.target.value,
     }));
   };
-
+  const handleReset = () => {
+    setRegistrationError("");
+    setForm({
+      fullName: "",
+      id_number: "",
+      dateOfBirth: "",
+      address: "",
+      photo: "",
+      photoFile: null,
+    });
+  };
   // ✅ PHOTO UPLOAD
   const handlePhotoUpload = (event) => {
     const file = event.target.files?.[0];
@@ -128,6 +138,7 @@ export default function Registration() {
 
                 <TextField
                   label="Full Name"
+                  required
                   fullWidth
                   value={form.fullName}
                   onChange={handleChange("fullName")}
@@ -135,6 +146,7 @@ export default function Registration() {
 
                 <TextField
                   label="ID Number"
+                  required
                   fullWidth
                   value={form.id_number}
                   onChange={handleChange("id_number")}
@@ -171,29 +183,45 @@ export default function Registration() {
                 />
 
                 <Box mt="auto">
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    fullWidth
-                    size="large"
-                    disabled={registrationLoading}
-                    startIcon={
-                      registrationLoading ? (
-                        <CircularProgress size={20} color="inherit" />
-                      ) : (
-                        <PersonAddAlt1Icon />
-                      )
-                    }
-                    sx={{
-                      borderRadius: 2,
-                      textTransform: "none",
-                      backgroundColor: "black",
-                    }}
-                  >
-                    {registrationLoading
-                      ? "Processing..."
-                      : "Complete Registration"}
-                  </Button>
+                  <Stack direction="row" spacing={2}>
+                    {/* CLEAR BUTTON */}
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      onClick={handleReset}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: "none",
+                        borderColor: "grey.400",
+                        color: "text.secondary",
+                      }}
+                    >
+                      Clear
+                    </Button>
+
+                    {/* SUBMIT BUTTON */}
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      fullWidth
+                      size="large"
+                      disabled={registrationLoading}
+                      startIcon={
+                        registrationLoading ? (
+                          <CircularProgress size={20} color="inherit" />
+                        ) : (
+                          <PersonAddAlt1Icon />
+                        )
+                      }
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: "none",
+                        backgroundColor: "black",
+                      }}
+                    >
+                      {registrationLoading ? "Processing..." : "Complete"}
+                    </Button>
+                  </Stack>
                 </Box>
               </Stack>
             </Paper>

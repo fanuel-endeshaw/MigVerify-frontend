@@ -4,7 +4,7 @@ import Dashboard from "../pages/Dashboard";
 import Overview from "../pages/Overview";
 import Users from "../pages/Users";
 import Registration from "../pages/Registration";
-import AdminProfile from "../pages/AdminProfile";
+// import AdminProfile from "../pages/AdminProfile";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function AppRoutes() {
