@@ -104,7 +104,7 @@ export default function Registration() {
   };
 
   return (
-    <Box sx={{ width: "100%", py: 2 }}>
+    <Box sx={{ width: "100%", py: 2, backgroundColor: "red" }}>
       {/* Header - Left Aligned */}
       <Stack spacing={0.5} sx={{ mb: 4 }}>
         <Typography variant="h4" fontWeight={800} letterSpacing="-0.5px">
@@ -115,10 +115,19 @@ export default function Registration() {
         </Typography>
       </Stack>
 
-      <Box component="form" onSubmit={handleCreateUser}>
-        <Grid container spacing={3}>
+      <Box
+        component="form"
+        sx={{ backgroundColor: "green" }}
+        onSubmit={handleCreateUser}
+      >
+        <Grid
+          sx={{ backgroundColor: "blue" }}
+          direction={"row"}
+          container
+          spacing={3}
+        >
           {/* Left Column: Main Form Data */}
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={6}>
             <Paper
               elevation={0}
               sx={{
@@ -139,7 +148,7 @@ export default function Registration() {
               )}
 
               <Grid container spacing={2.5}>
-                <Grid item xs={12}>
+                <Grid item xs={12} md={6}>
                   <TextField
                     label="Full Name"
                     required
