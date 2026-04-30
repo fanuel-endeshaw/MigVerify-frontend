@@ -52,12 +52,12 @@ export default function Dashboard() {
         path: "/dashboard/registration",
         icon: <PersonAddAlt1OutlinedIcon />,
       },
-      {
-        id: "adminProfile",
-        label: "Admin Profile",
-        path: "/dashboard/admin-profile",
-        icon: <AdminPanelSettingsOutlinedIcon />,
-      },
+      // {
+      //   id: "adminProfile",
+      //   label: "Admin Profile",
+      //   path: "/dashboard/admin-profile",
+      //   icon: <AdminPanelSettingsOutlinedIcon />,
+      // },
     ],
     [],
   );
@@ -98,7 +98,7 @@ export default function Dashboard() {
             selected={activeTab === item.id}
             onClick={() => handleNavChange(item.path)}
             sx={{
-              color: "gray",
+              color: "black",
               "&.Mui-selected": {
                 borderLeft: "7px solid #000000",
                 "&:hover": {
@@ -201,4 +201,3 @@ export default function Dashboard() {
     </Box>
   );
 }
-

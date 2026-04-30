@@ -149,3 +149,20 @@ export async function deleteUserBackend(id_number, token) {
 
   return data;
 }
+
+// ==========================
+// JWT DECODE
+// ==========================
+export function decodeToken() {
+  const token = getToken();
+  if (!token) return null;
+
+  try {
+    const payload = token.split(".")[1];
+    const decoded = JSON.parse(atob(payload));
+    return decoded;
+  } catch (error) {
+    console.error("Invalid token", error);
+    return null;
+  }
+}

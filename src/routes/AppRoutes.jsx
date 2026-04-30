@@ -41,7 +41,7 @@ export default function AppRoutes() {
           <Route index element={<Overview />} />
           <Route path="users" element={<Users />} />
           <Route path="registration" element={<Registration />} />
-          <Route path="admin-profile" element={<AdminProfile />} />
+          {/* <Route path="admin-profile" element={<AdminProfile />} /> */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
         <Route

@@ -42,7 +42,7 @@ import { useAuth } from "../auth/useAuth";
 import { useNavigate } from "react-router-dom";
 
 const USERS_PER_PAGE = 8;
-const API_BASE_URL = "http://192.168.137.232:5000";
+// const API_BASE_URL = "http://192.168.137.232:5000";
 
 // Standardize data keys safely
 const normalizeUser = (s = {}) => ({
@@ -68,6 +68,7 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [toast, setToast] = useState("");
 
