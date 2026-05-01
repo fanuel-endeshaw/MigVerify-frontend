@@ -115,9 +115,25 @@ export default function Report() {
         {FILTERS.map((f) => (
           <Button
             key={f.value}
-            sx={{ color: "black" }}
             variant={filter === f.value ? "contained" : "outlined"}
             onClick={() => setFilter(f.value)}
+            sx={{
+              // TEXT
+              color: filter === f.value ? "white" : "black",
+
+              // BACKGROUND
+              backgroundColor: filter === f.value ? "black" : "transparent",
+
+              // BORDER (for outlined)
+              borderColor: "black",
+
+              // HOVER
+              "&:hover": {
+                backgroundColor:
+                  filter === f.value ? "#222" : "rgba(0,0,0,0.05)",
+                borderColor: "black",
+              },
+            }}
           >
             {f.label}
           </Button>
