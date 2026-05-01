@@ -15,9 +15,11 @@ import {
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PersonAddAlt1OutlinedIcon from "@mui/icons-material/PersonAddAlt1Outlined";
-import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
+// import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
+import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+import SummarizeOutlinedIcon from "@mui/icons-material/SummarizeOutlined";
 import { useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
@@ -52,12 +54,18 @@ export default function Dashboard() {
         path: "/dashboard/registration",
         icon: <PersonAddAlt1OutlinedIcon />,
       },
-      // {
-      //   id: "adminProfile",
-      //   label: "Admin Profile",
-      //   path: "/dashboard/admin-profile",
-      //   icon: <AdminPanelSettingsOutlinedIcon />,
-      // },
+      {
+        id: "todayScanned",
+        label: "Today scanned",
+        path: "/dashboard/today-scanned",
+        icon: <QrCodeScannerIcon />,
+      },
+      {
+        id: "report",
+        label: "Report",
+        path: "/dashboard/report",
+        icon: <SummarizeOutlinedIcon />,
+      },
     ],
     [],
   );
@@ -65,7 +73,9 @@ export default function Dashboard() {
   const activeTab = useMemo(() => {
     if (pathname.startsWith("/dashboard/users")) return "users";
     if (pathname.startsWith("/dashboard/registration")) return "registration";
-    if (pathname.startsWith("/dashboard/admin-profile")) return "adminProfile";
+    if (pathname.startsWith("/dashboard/today-scanned")) return "todayScanned";
+    if (pathname.startsWith("/dashboard/report")) return "report";
+    // if (pathname.startsWith("/dashboard/admin-profile")) return "adminProfile";
     return "overview";
   }, [pathname]);
 

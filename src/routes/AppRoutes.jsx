@@ -6,6 +6,8 @@ import Users from "../pages/Users";
 import Registration from "../pages/Registration";
 // import AdminProfile from "../pages/AdminProfile";
 import ProtectedRoute from "../components/ProtectedRoute";
+import TodayScanned from "../pages/TodayScanned";
+import Report from "../pages/Report";
 
 export default function AppRoutes() {
   return (
@@ -41,8 +43,9 @@ export default function AppRoutes() {
           <Route index element={<Overview />} />
           <Route path="users" element={<Users />} />
           <Route path="registration" element={<Registration />} />
-          {/* <Route path="admin-profile" element={<AdminProfile />} /> */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="today-scanned" element={<TodayScanned />} />
+          <Route path="report" element={<Report />} />
+          {/* <Route path="*" element={<Navigate to="/dashboard" replace />} /> */}
         </Route>
         <Route
           path="*"

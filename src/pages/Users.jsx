@@ -237,12 +237,15 @@ export default function Users() {
                     <TableCell>{user.id}</TableCell>
                     <TableCell>{user.id_number}</TableCell>
 
-                    <TableCell align="right" onClick={() => handleDelete(user)}>
+                    <TableCell align="right">
                       <IconButton onClick={() => setSelectedUser(user)}>
                         <ViewIcon />
                       </IconButton>
 
-                      <IconButton color="error">
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDelete(user)}
+                      >
                         <DeleteIcon />
                       </IconButton>
                     </TableCell>
