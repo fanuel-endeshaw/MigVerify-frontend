@@ -210,7 +210,7 @@ export default function Users() {
       <Paper>
         {loading ? (
           <Box textAlign="center" sx={{ mt: 1, padding: 2 }}>
-            <CircularProgress sx={{ color: "black" }} />
+            <CircularProgress size={24} sx={{ color: "black" }} />
           </Box>
         ) : error ? (
           <Alert severity="error">{error}</Alert>
@@ -258,7 +258,12 @@ export default function Users() {
           </TableContainer>
         )}
 
-        <Stack direction="row" justifyContent="space-between" p={2}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          p={2}
+          sx={{ padding: 1, alignItems: "center" }}
+        >
           <Typography variant="caption">
             Total: {filteredUsers.length}
           </Typography>
