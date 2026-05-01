@@ -11,7 +11,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   IconButton,
   Pagination,
   Paper,
@@ -25,8 +24,6 @@ import {
   TableRow,
   TextField,
   Typography,
-  Tooltip,
-  useTheme,
 } from "@mui/material";
 
 import {
@@ -65,7 +62,7 @@ const normalizeUser = (s = {}) => ({
 });
 
 export default function Users() {
-  const theme = useTheme();
+  // const theme = useTheme();
   const { token } = useAuth();
   const navigate = useNavigate();
 
@@ -180,7 +177,12 @@ export default function Users() {
       </Stack>
 
       {/* SEARCH */}
-      <Stack direction={{ xs: "column", md: "row" }} spacing={2} mb={3}>
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        sx={{ mt: 1, mb: 1 }}
+        spacing={2}
+        mb={3}
+      >
         <TextField
           placeholder="Search..."
           value={query}
@@ -207,8 +209,8 @@ export default function Users() {
       {/* TABLE */}
       <Paper>
         {loading ? (
-          <Box textAlign="center" p={5}>
-            <CircularProgress />
+          <Box textAlign="center" sx={{ mt: 1, padding: 2 }}>
+            <CircularProgress sx={{ color: "black" }} />
           </Box>
         ) : error ? (
           <Alert severity="error">{error}</Alert>
@@ -243,8 +245,8 @@ export default function Users() {
                       </IconButton>
 
                       <IconButton
-                        color="error"
                         onClick={() => handleDelete(user)}
+                        color="error"
                       >
                         <DeleteIcon />
                       </IconButton>

@@ -19,44 +19,10 @@ import { useAuth } from "../auth/useAuth";
 
 const ROWS_PER_PAGE = 6;
 
-// ✅ DEMO DATA (shown before backend loads)
-const demoData = [
-  {
-    id: 1,
-    full_name: "John Doe",
-    id_number: "ID12345",
-    scanned_at: "2026-05-01 10:15 AM",
-  },
-  {
-    id: 2,
-    full_name: "Jane Smith",
-    id_number: "ID67890",
-    scanned_at: "2026-05-01 10:45 AM",
-  },
-  {
-    id: 3,
-    full_name: "Michael Brown",
-    id_number: "ID54321",
-    scanned_at: "2026-05-01 11:10 AM",
-  },
-  {
-    id: 4,
-    full_name: "Sarah Johnson",
-    id_number: "ID99887",
-    scanned_at: "2026-05-01 11:30 AM",
-  },
-  {
-    id: 5,
-    full_name: "David Lee",
-    id_number: "ID77665",
-    scanned_at: "2026-05-01 12:00 PM",
-  },
-];
-
 export default function TodayScanned() {
   const { token } = useAuth();
 
-  const [data, setData] = useState(demoData); // ✅ start with demo
+  const [data, setData] = useState([]); // ✅ start empty
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
@@ -83,7 +49,6 @@ export default function TodayScanned() {
           throw new Error(result.message || "Failed to fetch");
         }
 
-        // ✅ normalize backend data
         const normalized = (result.data || result || []).map((s, i) => ({
           id: s.id || i,
           full_name: s.full_name || s.name || "Unknown",
@@ -100,7 +65,6 @@ export default function TodayScanned() {
     };
 
     fetchScanned();
-
     return () => (active = false);
   }, [token]);
 
@@ -115,22 +79,44 @@ export default function TodayScanned() {
   // UI
   // ==========================
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" fontWeight={700} mb={2}>
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h4" fontWeight={700} mb={2}>
         Today Scanned Users
       </Typography>
 
       <Paper>
+        {/* ✅ LOADING STATE */}
         {loading && (
-          <Box textAlign="center" p={4}>
-            <CircularProgress />
-            <Typography mt={1}>Loading data...</Typography>
+          <Stack
+            direction="row"
+            alignItems="center"
+            sx={{ padding: 2, mt: 1 }}
+            spacing={1}
+            p={2}
+          >
+            <CircularProgress sx={{ color: "black" }} size={18} />
+            <Typography variant="caption">Fetching data...</Typography>
+          </Stack>
+        )}
+
+        {/* ✅ ERROR */}
+        {error && (
+          <Alert sx={{ padding: 1, mt: 1 }} severity="error">
+            {error}
+          </Alert>
+        )}
+
+        {/* ✅ EMPTY STATE */}
+        {!loading && !error && data.length === 0 && (
+          <Box textAlign="center" p={4} sx={{ padding: 1, mt: 1 }}>
+            <Typography color="text.secondary">
+              No scans found for today
+            </Typography>
           </Box>
         )}
 
-        {error && <Alert severity="error">{error}</Alert>}
-
-        {!loading && !error && (
+        {/* ✅ TABLE */}
+        {!error && data.length > 0 && (
           <>
             <TableContainer>
               <Table>
