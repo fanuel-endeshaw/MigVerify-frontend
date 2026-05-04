@@ -14,7 +14,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 
-const apiBaseUrl = "http://192.168.1.56:5000";
+const apiBaseUrl = "http://192.168.137.232:5000";
 
 export default function Registration() {
   const navigate = useNavigate();

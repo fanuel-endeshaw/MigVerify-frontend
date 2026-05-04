@@ -37,23 +37,27 @@ export default function TodayScanned() {
       try {
         setLoading(true);
 
-        const res = await fetch("http://192.168.1.56:5000/api/scans/today", {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const res = await fetch(
+          "http://192.168.137.232:5000/api/history/today-scans",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
+        );
 
         const result = await res.json();
+        console.log(result);
 
         if (!res.ok) {
           throw new Error(result.message || "Failed to fetch");
         }
 
-        const normalized = (result.data || result || []).map((s, i) => ({
+        const normalized = (result.users || result || []).map((s, i) => ({
           id: s.id || i,
           full_name: s.full_name || s.name || "Unknown",
           id_number: s.id_number || "N/A",
-          scanned_at: s.scanned_at || s.created_at || "-",
+          verified_at: s.verified_at || s.created_at || "-",
         }));
 
         if (active) setData(normalized);
@@ -118,7 +122,7 @@ export default function TodayScanned() {
         {/* ✅ TABLE */}
         {!error && data.length > 0 && (
           <>
-            <TableContainer>
+            <TableContainer sx={{ mt: 1 }}>
               <Table>
                 <TableHead>
                   <TableRow>
@@ -139,7 +143,7 @@ export default function TodayScanned() {
                     <TableRow key={row.id} hover>
                       <TableCell>{row.full_name}</TableCell>
                       <TableCell>{row.id_number}</TableCell>
-                      <TableCell>{row.scanned_at}</TableCell>
+                      <TableCell>{row.verified_at}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -150,7 +154,7 @@ export default function TodayScanned() {
             <Stack
               direction="row"
               justifyContent="space-between"
-              p={2}
+              sx={{ padding: 1 }}
               alignItems="center"
             >
               <Typography variant="caption">Total: {data.length}</Typography>

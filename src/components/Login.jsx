@@ -97,6 +97,7 @@ export default function Login() {
               <Button
                 type="submit"
                 variant="contained"
+                sx={{ bgcolor: "black" }}
                 disabled={loading}
                 size="large"
               >

@@ -5,7 +5,6 @@ import {
   Button,
   Card,
   CardContent,
-  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -240,7 +239,11 @@ export default function Users() {
                     <TableCell>{user.id_number}</TableCell>
 
                     <TableCell align="right">
-                      <IconButton onClick={() => setSelectedUser(user)}>
+                      <IconButton
+                        onClick={() => {
+                          (setSelectedUser(user), console.log(user));
+                        }}
+                      >
                         <ViewIcon />
                       </IconButton>
 
@@ -289,26 +292,35 @@ export default function Users() {
         <DialogContent>
           {selectedUser && (
             <Stack spacing={3} alignItems="center" py={2}>
-              <Avatar sx={{ width: 110, height: 110 }}>
+              {/* <Avatar sx={{ width: 110, height: 110 }}>
                 {selectedUser.name[0]}
-              </Avatar>
+              </Avatar> */}
+              <Box
+                component={"img"}
+                src={selectedUser.photo_url}
+                sx={{ width: 140, height: 140 }}
+              ></Box>
 
               <Box textAlign="center">
                 <Typography variant="h5" fontWeight={700}>
                   {selectedUser.name}
                 </Typography>
+
                 <Typography color="text.secondary">
                   {selectedUser.id_number}
                 </Typography>
               </Box>
 
-              <Chip label={selectedUser.status} />
+              {/* <Chip label={selectedUser.status} /> */}
 
               {/* QR */}
               <Card sx={{ width: "100%" }}>
                 <CardContent>
                   <Typography align="center" gutterBottom>
                     Scan QR
+                  </Typography>
+                  <Typography color="text.secondary">
+                    QR Token: {selectedUser.qr_token}
                   </Typography>
 
                   <Box textAlign="center">

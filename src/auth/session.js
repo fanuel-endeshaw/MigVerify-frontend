@@ -1,7 +1,7 @@
 // ==========================
 // CONFIG
 // ==========================
-const API_BASE_URL = "http://192.168.1.56:5000";
+const API_BASE_URL = "http://192.168.137.232:5000";
 const TOKEN_KEY = "id_verify_token";
 
 // ==========================

@@ -45,7 +45,7 @@ export default function Report() {
         setError("");
 
         const res = await fetch(
-          `http://192.168.1.56:5000/api/reports?range=${filter}`,
+          `http://192.168.137.232:5000/api/history/today-scans`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -54,12 +54,12 @@ export default function Report() {
         );
 
         const result = await res.json();
-
+        console.log(result.users);
         if (!res.ok) {
           throw new Error(result.message || "Failed to fetch report");
         }
 
-        const normalized = (result.data || result || []).map((r, i) => ({
+        const normalized = (result.users || result || []).map((r, i) => ({
           id: r.id || i,
           full_name: r.full_name || r.name || "Unknown",
           id_number: r.id_number || "N/A",
