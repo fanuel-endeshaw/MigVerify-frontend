@@ -112,7 +112,7 @@ export default function TodayScanned() {
 
         {/* ✅ EMPTY STATE */}
         {!loading && !error && data.length === 0 && (
-          <Box textAlign="center" p={4} sx={{ padding: 1, mt: 1 }}>
+          <Box textAlign="center" sx={{ padding: 2, mt: 1 }}>
             <Typography color="text.secondary">
               No scans found for today
             </Typography>

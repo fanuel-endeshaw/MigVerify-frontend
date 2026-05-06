@@ -7,12 +7,13 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import { fetchUsers } from "../auth/session";
+import { fetchCount, fetchUsers } from "../auth/session";
 import { useAuth } from "../auth/useAuth";
 
 export default function Overview() {
   const { token } = useAuth();
   const [users, setUsers] = useState([]);
+  const [todayScans, setTodayScans] = useState();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -29,6 +30,11 @@ export default function Overview() {
         const data = await fetchUsers(token);
         const list = data?.user || data || [];
         if (mounted) setUsers(list);
+        const data2 = await fetchCount(token);
+        console.log("count");
+        setTodayScans(data2);
+        console.log(data2);
+        console.log("count");
       } catch (e) {
         if (mounted) {
           setError(e?.message || "Failed to load overview data.");
@@ -45,10 +51,10 @@ export default function Overview() {
     };
   }, [token]);
 
-  const todayScans = useMemo(
-    () => users.reduce((total, item) => total + (item.scans || 0), 0),
-    [users],
-  );
+  // const todayScans = useMemo(
+  //   () => users.reduce((total, item) => total + (item.scans || 0), 0),
+  //   [users],
+  // );
 
   const totalUsers = users.length;
 
@@ -88,4 +94,3 @@ export default function Overview() {
     </Stack>
   );
 }
-

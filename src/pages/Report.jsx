@@ -29,12 +29,14 @@ export default function Report() {
   const { token } = useAuth();
 
   const [filter, setFilter] = useState("today");
+  const [rawData, setRawData] = useState([]);
   const [data, setData] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // ==========================
-  // FETCH DATA
+  // FETCH DATA (ONLY ONCE)
   // ==========================
   useEffect(() => {
     let active = true;
@@ -45,7 +47,7 @@ export default function Report() {
         setError("");
 
         const res = await fetch(
-          `http://192.168.137.232:5000/api/history/today-scans`,
+          `http://192.168.137.232:5000/api/history/all-scans`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -54,19 +56,21 @@ export default function Report() {
         );
 
         const result = await res.json();
-        console.log(result.users);
+
         if (!res.ok) {
           throw new Error(result.message || "Failed to fetch report");
         }
 
         const normalized = (result.users || result || []).map((r, i) => ({
           id: r.id || i,
-          full_name: r.full_name || r.name || "Unknown",
+          full_name: r.full_name || "Unknown",
           id_number: r.id_number || "N/A",
-          scanned_at: r.scanned_at || r.created_at || "-",
+          scanned_at: r.verified_at || null, // ✅ IMPORTANT
         }));
 
-        if (active) setData(normalized);
+        if (active) {
+          setRawData(normalized);
+        }
       } catch (err) {
         if (active) setError(err.message);
       } finally {
@@ -76,17 +80,58 @@ export default function Report() {
 
     fetchReport();
     return () => (active = false);
-  }, [filter, token]);
+  }, [token]);
+
+  // ==========================
+  // FILTER LOGIC (USES verified_at)
+  // ==========================
+  useEffect(() => {
+    const now = new Date();
+
+    const filtered = rawData.filter((item) => {
+      if (!item.scanned_at) return false; // skip unverified
+
+      const scanDate = new Date(item.scanned_at);
+
+      if (filter === "today") {
+        return scanDate.toDateString() === now.toDateString();
+      }
+
+      if (filter === "7days") {
+        const past = new Date();
+        past.setDate(now.getDate() - 7);
+        return scanDate >= past && scanDate <= now;
+      }
+
+      if (filter === "30days") {
+        const past = new Date();
+        past.setDate(now.getDate() - 30);
+        return scanDate >= past && scanDate <= now;
+      }
+
+      return true;
+    });
+
+    setData(filtered);
+  }, [filter, rawData]);
 
   // ==========================
   // EXPORT TO EXCEL
   // ==========================
   const exportToExcel = () => {
-    if (data.length === 0) return;
+    if (!data.length) return;
 
-    const worksheet = XLSX.utils.json_to_sheet(data);
+    const worksheet = XLSX.utils.json_to_sheet(
+      data.map((d) => ({
+        Full_Name: d.full_name,
+        ID_Number: d.id_number,
+        Verified_At: d.scanned_at
+          ? new Date(d.scanned_at).toLocaleString()
+          : "Not Verified",
+      })),
+    );
+
     const workbook = XLSX.utils.book_new();
-
     XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
 
     const excelBuffer = XLSX.write(workbook, {
@@ -106,28 +151,21 @@ export default function Report() {
   // ==========================
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" sx={{ mb: 1 }} fontWeight={700} mb={3}>
+      <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
         Reports
       </Typography>
 
       {/* FILTERS */}
-      <Stack direction="row" spacing={2} mb={3} sx={{ mb: 1 }}>
+      <Stack direction="row" spacing={2} mb={3}>
         {FILTERS.map((f) => (
           <Button
             key={f.value}
             variant={filter === f.value ? "contained" : "outlined"}
             onClick={() => setFilter(f.value)}
             sx={{
-              // TEXT
               color: filter === f.value ? "white" : "black",
-
-              // BACKGROUND
               backgroundColor: filter === f.value ? "black" : "transparent",
-
-              // BORDER (for outlined)
               borderColor: "black",
-
-              // HOVER
               "&:hover": {
                 backgroundColor:
                   filter === f.value ? "#222" : "rgba(0,0,0,0.05)",
@@ -151,22 +189,26 @@ export default function Report() {
 
       <Paper>
         {loading && (
-          <Stack direction="row" spacing={1} sx={{ padding: 2 }}>
+          <Stack direction="row" spacing={1} sx={{ p: 2, mt: 1 }}>
             <CircularProgress size={18} sx={{ color: "black" }} />
             <Typography variant="caption">Loading report...</Typography>
           </Stack>
         )}
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {error && (
+          <Alert sx={{ p: 2, mt: 1 }} severity="error">
+            {error}
+          </Alert>
+        )}
 
         {!loading && data.length === 0 && (
-          <Box p={4} textAlign="center" sx={{ padding: 1 }}>
+          <Box textAlign="center" sx={{ p: 2, mt: 1 }}>
             <Typography color="text.secondary">No records found</Typography>
           </Box>
         )}
 
         {data.length > 0 && (
-          <TableContainer>
+          <TableContainer sx={{ mt: 1 }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -177,7 +219,7 @@ export default function Report() {
                     <b>ID Number</b>
                   </TableCell>
                   <TableCell>
-                    <b>Scanned At</b>
+                    <b>Verified At</b>
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -187,7 +229,11 @@ export default function Report() {
                   <TableRow key={row.id} hover>
                     <TableCell>{row.full_name}</TableCell>
                     <TableCell>{row.id_number}</TableCell>
-                    <TableCell>{row.scanned_at}</TableCell>
+                    <TableCell>
+                      {row.scanned_at
+                        ? new Date(row.scanned_at).toLocaleString()
+                        : "Not Verified"}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

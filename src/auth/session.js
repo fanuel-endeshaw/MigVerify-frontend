@@ -98,6 +98,26 @@ export async function fetchUsers(token) {
     return [];
   }
 }
+export async function fetchCount(token) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/history/today-scans`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to fetch users");
+    }
+
+    return data.count;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
 
 // ==========================
 // CREATE USER (WITH IMAGE)
