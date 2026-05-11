@@ -51,7 +51,7 @@ export default function Login() {
     >
       <Paper sx={{ p: 4, width: "100%", maxWidth: 420 }}>
         <Stack spacing={2}>
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
             {/* <ShieldOutlinedIcon color="primary" />
              */}
             <img

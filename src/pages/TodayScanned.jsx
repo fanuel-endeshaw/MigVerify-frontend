@@ -22,10 +22,29 @@ const ROWS_PER_PAGE = 6;
 export default function TodayScanned() {
   const { token } = useAuth();
 
-  const [data, setData] = useState([]); // ✅ start empty
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
+
+  // ==========================
+  // FORMAT DATE
+  // ==========================
+  const formatDateTime = (dateString) => {
+    if (!dateString || dateString === "-") return "-";
+
+    const date = new Date(dateString);
+
+    return date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+  };
 
   // ==========================
   // FETCH FROM BACKEND
@@ -38,7 +57,7 @@ export default function TodayScanned() {
         setLoading(true);
 
         const res = await fetch(
-          "http://192.168.137.232:5000/api/history/today-scans",
+          "http://192.168.1.53:5000/api/history/today-scans",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -47,6 +66,7 @@ export default function TodayScanned() {
         );
 
         const result = await res.json();
+
         console.log(result);
 
         if (!res.ok) {
@@ -69,7 +89,10 @@ export default function TodayScanned() {
     };
 
     fetchScanned();
-    return () => (active = false);
+
+    return () => {
+      active = false;
+    };
   }, [token]);
 
   // ==========================
@@ -89,28 +112,26 @@ export default function TodayScanned() {
       </Typography>
 
       <Paper>
-        {/* ✅ LOADING STATE */}
+        {/* LOADING */}
         {loading && (
           <Stack
             direction="row"
-            alignItems="center"
-            sx={{ padding: 2, mt: 1 }}
+            sx={{ padding: 2, mt: 1, alignItems: "center" }}
             spacing={1}
-            p={2}
           >
             <CircularProgress sx={{ color: "black" }} size={18} />
             <Typography variant="caption">Fetching data...</Typography>
           </Stack>
         )}
 
-        {/* ✅ ERROR */}
+        {/* ERROR */}
         {error && (
           <Alert sx={{ padding: 1, mt: 1 }} severity="error">
             {error}
           </Alert>
         )}
 
-        {/* ✅ EMPTY STATE */}
+        {/* EMPTY */}
         {!loading && !error && data.length === 0 && (
           <Box textAlign="center" sx={{ padding: 2, mt: 1 }}>
             <Typography color="text.secondary">
@@ -119,7 +140,7 @@ export default function TodayScanned() {
           </Box>
         )}
 
-        {/* ✅ TABLE */}
+        {/* TABLE */}
         {!error && data.length > 0 && (
           <>
             <TableContainer sx={{ mt: 1 }}>
@@ -129,9 +150,11 @@ export default function TodayScanned() {
                     <TableCell>
                       <b>Full Name</b>
                     </TableCell>
+
                     <TableCell>
-                      <b>ID Number</b>
+                      <b>Employee ID</b>
                     </TableCell>
+
                     <TableCell>
                       <b>Scanned At</b>
                     </TableCell>
@@ -140,22 +163,23 @@ export default function TodayScanned() {
 
                 <TableBody>
                   {paginatedData.map((row) => (
-                    <TableRow key={row.id} hover>
+                    <TableRow hover key={row.id}>
                       <TableCell>{row.full_name}</TableCell>
+
                       <TableCell>{row.id_number}</TableCell>
-                      <TableCell>{row.verified_at}</TableCell>
+
+                      <TableCell>{formatDateTime(row.verified_at)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </TableContainer>
 
-            {/* Pagination */}
+            {/* PAGINATION */}
             <Stack
               direction="row"
               justifyContent="space-between"
-              sx={{ padding: 1 }}
-              alignItems="center"
+              sx={{ padding: 1, alignItems: "center" }}
             >
               <Typography variant="caption">Total: {data.length}</Typography>
 

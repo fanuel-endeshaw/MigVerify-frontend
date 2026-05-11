@@ -1,7 +1,7 @@
 // ==========================
 // CONFIG
 // ==========================
-const API_BASE_URL = "http://192.168.137.232:5000";
+const API_BASE_URL = "http://192.168.1.53:5000";
 const TOKEN_KEY = "id_verify_token";
 
 // ==========================
@@ -150,10 +150,6 @@ export async function createUserBackend(form, token) {
 
   return data;
 }
-
-// ==========================
-// DELETE USER
-// ==========================
 
 export async function deleteUserBackend(id_number, token) {
   const res = await fetch(`${API_BASE_URL}/api/users/${id_number}`, {

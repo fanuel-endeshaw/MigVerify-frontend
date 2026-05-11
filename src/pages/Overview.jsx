@@ -65,7 +65,7 @@ export default function Overview() {
       </Typography>
 
       {loading ? (
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
           <CircularProgress size={24} />
           <Typography color="text.secondary">Loading...</Typography>
         </Stack>
@@ -78,7 +78,7 @@ export default function Overview() {
             { label: "Today Scans", value: todayScans },
             // Future cards can be added here.
           ].map((card) => (
-            <Grid key={card.label} item xs={12} sm={6} lg={3}>
+            <Grid key={card.label} xs={12} sm={6} lg={3}>
               <Card>
                 <CardContent>
                   <Typography color="text.secondary">{card.label}</Typography>

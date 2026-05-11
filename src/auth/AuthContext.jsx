@@ -1,17 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthContext } from "./AuthContextCore";
+import { jwtDecode } from "jwt-decode";
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
-  const [isAuthenticated, setIsAuthenticated] = useState(!!token);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const isTokenValid = (jwt) => {
+    try {
+      const decoded = jwtDecode(jwt);
+      if (!decoded.exp) return false;
+      const now = Date.now() / 1000;
+      return decoded.exp > now;
+    } catch {
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    if (token && isTokenValid(token)) {
+      setIsAuthenticated(true);
+    } else {
+      // ✅ only clear state here, no redirect
+      localStorage.removeItem("token");
+      setToken(null);
+      setIsAuthenticated(false);
+    }
+  }, [token]); // runs only when token changes
 
   const login = async (email, password) => {
     try {
-      const res = await fetch("http://192.168.137.232:5000/api/admins/login", {
+      const res = await fetch("http://192.168.1.53:5000/api/admins/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
@@ -21,18 +42,13 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: data.message };
       }
 
-      // ✅ SAVE TOKEN HERE
       localStorage.setItem("token", data.token);
       setToken(data.token);
       setIsAuthenticated(true);
 
       return { success: true };
     } catch (err) {
-      return {
-        success: false,
-        status: err.status || 500,
-        error: err.message || "Login failed. Please try again.",
-      };
+      return { success: false, error: err.message || "Login failed." };
     }
   };
 
@@ -40,17 +56,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     setToken(null);
     setIsAuthenticated(false);
+    // ✅ redirect separately, not inside useEffect
+    window.location.href = "/login";
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        token, // ✅ MUST expose this
-        isAuthenticated,
-        login,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ token, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

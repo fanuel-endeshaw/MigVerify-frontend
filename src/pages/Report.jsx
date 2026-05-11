@@ -47,7 +47,7 @@ export default function Report() {
         setError("");
 
         const res = await fetch(
-          `http://192.168.137.232:5000/api/history/all-scans`,
+          `http://192.168.1.53:5000/api/history/all-scans`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -159,7 +159,7 @@ export default function Report() {
       <Stack direction="row" spacing={2} mb={3}>
         {FILTERS.map((f) => (
           <Button
-            key={f.value}
+            // key={f.value}
             variant={filter === f.value ? "contained" : "outlined"}
             onClick={() => setFilter(f.value)}
             sx={{
@@ -216,7 +216,7 @@ export default function Report() {
                     <b>Full Name</b>
                   </TableCell>
                   <TableCell>
-                    <b>ID Number</b>
+                    <b>Employee ID</b>
                   </TableCell>
                   <TableCell>
                     <b>Verified At</b>

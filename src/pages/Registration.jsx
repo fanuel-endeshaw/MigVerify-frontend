@@ -10,15 +10,17 @@ import {
 } from "@mui/material";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 
-const apiBaseUrl = "http://192.168.137.232:5000";
+const apiBaseUrl = "http://192.168.1.53:5000";
 
 export default function Registration() {
   const navigate = useNavigate();
   const { token } = useAuth();
+
+  const fileInputRef = useRef(null);
 
   const [registrationError, setRegistrationError] = useState("");
   const [registrationLoading, setRegistrationLoading] = useState(false);
@@ -39,8 +41,11 @@ export default function Registration() {
       [field]: e.target.value,
     }));
   };
+
+  // ✅ RESET FORM
   const handleReset = () => {
     setRegistrationError("");
+
     setForm({
       fullName: "",
       id_number: "",
@@ -49,13 +54,20 @@ export default function Registration() {
       photo: "",
       photoFile: null,
     });
+
+    // ✅ IMPORTANT FIX
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
+
   // ✅ PHOTO UPLOAD
   const handlePhotoUpload = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
+
     reader.onload = () => {
       setForm((prev) => ({
         ...prev,
@@ -63,6 +75,7 @@ export default function Registration() {
         photoFile: file,
       }));
     };
+
     reader.readAsDataURL(file);
   };
 
@@ -80,6 +93,7 @@ export default function Registration() {
 
     try {
       const payload = new FormData();
+
       payload.append("full_name", form.fullName);
       payload.append("id_number", form.id_number);
       payload.append("date_of_birth", form.dateOfBirth);
@@ -145,7 +159,7 @@ export default function Registration() {
                 />
 
                 <TextField
-                  label="ID Number"
+                  label="Employee ID"
                   required
                   fullWidth
                   value={form.id_number}
@@ -155,7 +169,6 @@ export default function Registration() {
                 <TextField
                   type="date"
                   label="Date of Birth"
-                  InputLabelProps={{ shrink: true }}
                   fullWidth
                   value={form.dateOfBirth}
                   sx={{
@@ -184,7 +197,6 @@ export default function Registration() {
 
                 <Box mt="auto">
                   <Stack direction="row" spacing={2}>
-                    {/* CLEAR BUTTON */}
                     <Button
                       variant="outlined"
                       fullWidth
@@ -199,7 +211,6 @@ export default function Registration() {
                       Clear
                     </Button>
 
-                    {/* SUBMIT BUTTON */}
                     <Button
                       type="submit"
                       variant="contained"
@@ -236,7 +247,7 @@ export default function Registration() {
                 flexDirection: "column",
               }}
             >
-              <Typography mb={2}>Profile Photo</Typography>
+              <Typography mb={2}>Employee Photo</Typography>
 
               <Box
                 sx={{
@@ -266,7 +277,6 @@ export default function Registration() {
                 )}
               </Box>
 
-              {/* ✅ FIXED BUTTON */}
               <Button
                 component="label"
                 variant="outlined"
@@ -276,6 +286,7 @@ export default function Registration() {
               >
                 Upload Photo
                 <input
+                  ref={fileInputRef}
                   hidden
                   type="file"
                   accept="image/*"
