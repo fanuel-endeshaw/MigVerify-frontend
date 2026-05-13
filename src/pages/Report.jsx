@@ -12,6 +12,7 @@ import {
   TableRow,
   CircularProgress,
   Alert,
+  TextField,
 } from "@mui/material";
 
 import { useEffect, useState } from "react";
@@ -19,24 +20,20 @@ import { useAuth } from "../auth/useAuth";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-const FILTERS = [
-  { label: "Today", value: "today" },
-  { label: "Last 7 Days", value: "7days" },
-  { label: "Last 30 Days", value: "30days" },
-];
-
 export default function Report() {
   const { token } = useAuth();
 
-  const [filter, setFilter] = useState("today");
   const [rawData, setRawData] = useState([]);
   const [data, setData] = useState([]);
+
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // ==========================
-  // FETCH DATA (ONLY ONCE)
+  // FETCH DATA
   // ==========================
   useEffect(() => {
     let active = true;
@@ -65,7 +62,7 @@ export default function Report() {
           id: r.id || i,
           full_name: r.full_name || "Unknown",
           id_number: r.id_number || "N/A",
-          scanned_at: r.verified_at || null, // ✅ IMPORTANT
+          scanned_at: r.verified_at || null,
         }));
 
         if (active) {
@@ -79,41 +76,53 @@ export default function Report() {
     };
 
     fetchReport();
-    return () => (active = false);
+
+    return () => {
+      active = false;
+    };
   }, [token]);
 
-  // ==========================
-  // FILTER LOGIC (USES verified_at)
-  // ==========================
-  useEffect(() => {
-    const now = new Date();
+  //#################################
 
-    const filtered = rawData.filter((item) => {
-      if (!item.scanned_at) return false; // skip unverified
+  // FILTER LOGIC
+
+  useEffect(() => {
+    let filtered = [...rawData];
+
+    filtered = filtered.filter((item) => {
+      if (!item.scanned_at) return false;
 
       const scanDate = new Date(item.scanned_at);
 
-      if (filter === "today") {
-        return scanDate.toDateString() === now.toDateString();
+      // START DATE
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+
+        if (scanDate < start) return false;
       }
 
-      if (filter === "7days") {
-        const past = new Date();
-        past.setDate(now.getDate() - 7);
-        return scanDate >= past && scanDate <= now;
-      }
+      // END DATE
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
 
-      if (filter === "30days") {
-        const past = new Date();
-        past.setDate(now.getDate() - 30);
-        return scanDate >= past && scanDate <= now;
+        if (scanDate > end) return false;
       }
 
       return true;
     });
 
     setData(filtered);
-  }, [filter, rawData]);
+  }, [startDate, endDate, rawData]);
+
+  // ==========================
+  // CLEAR FILTERS
+
+  const clearFilters = () => {
+    setStartDate("");
+    setEndDate("");
+  };
 
   // ==========================
   // EXPORT TO EXCEL
@@ -132,6 +141,7 @@ export default function Report() {
     );
 
     const workbook = XLSX.utils.book_new();
+
     XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
 
     const excelBuffer = XLSX.write(workbook, {
@@ -143,7 +153,7 @@ export default function Report() {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
-    saveAs(file, `report-${filter}.xlsx`);
+    saveAs(file, `report.xlsx`);
   };
 
   // ==========================
@@ -156,32 +166,82 @@ export default function Report() {
       </Typography>
 
       {/* FILTERS */}
-      <Stack direction="row" spacing={2} mb={3}>
-        {FILTERS.map((f) => (
-          <Button
-            // key={f.value}
-            variant={filter === f.value ? "contained" : "outlined"}
-            onClick={() => setFilter(f.value)}
-            sx={{
-              color: filter === f.value ? "white" : "black",
-              backgroundColor: filter === f.value ? "black" : "transparent",
-              borderColor: "black",
-              "&:hover": {
-                backgroundColor:
-                  filter === f.value ? "#222" : "rgba(0,0,0,0.05)",
-                borderColor: "black",
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        mb={3}
+        alignItems={{ sm: "center" }}
+      >
+        <TextField
+          label="Start Date"
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          sx={{
+            minWidth: 200,
+            // 1. Hide the placeholder text when not focused and empty
+            "& input::-webkit-datetime-edit-month-field, & input::-webkit-datetime-edit-day-field, & input::-webkit-datetime-edit-year-field, & input::-webkit-datetime-edit-text":
+              {
+                color: startDate ? "inherit" : "transparent",
               },
-            }}
-          >
-            {f.label}
-          </Button>
-        ))}
+            // 2. Show the placeholder text when focused
+            "&:focus-within input::-webkit-datetime-edit-month-field, &:focus-within input::-webkit-datetime-edit-day-field, &:focus-within input::-webkit-datetime-edit-year-field, &:focus-within input::-webkit-datetime-edit-text":
+              {
+                color: "inherit",
+              },
+          }}
+        />
+
+        <TextField
+          label="End Date"
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          sx={{
+            minWidth: 200,
+            // 1. Hide the placeholder text when not focused and empty
+            "& input::-webkit-datetime-edit-month-field, & input::-webkit-datetime-edit-day-field, & input::-webkit-datetime-edit-year-field, & input::-webkit-datetime-edit-text":
+              {
+                color: endDate ? "inherit" : "transparent",
+              },
+            // 2. Show the placeholder text when focused
+            "&:focus-within input::-webkit-datetime-edit-month-field, &:focus-within input::-webkit-datetime-edit-day-field, &:focus-within input::-webkit-datetime-edit-year-field, &:focus-within input::-webkit-datetime-edit-text":
+              {
+                color: "inherit",
+              },
+          }}
+        />
+
+        <Button
+          variant="outlined"
+          onClick={clearFilters}
+          sx={{
+            color: "black",
+            borderColor: "black",
+            height: 56,
+            "&:hover": {
+              borderColor: "black",
+              backgroundColor: "rgba(0,0,0,0.05)",
+            },
+          }}
+        >
+          Clear Filters
+        </Button>
 
         <Button
           variant="contained"
           color="success"
           onClick={exportToExcel}
           disabled={!data.length}
+          sx={{
+            height: 56,
+          }}
         >
           Export Excel
         </Button>
@@ -215,9 +275,11 @@ export default function Report() {
                   <TableCell>
                     <b>Full Name</b>
                   </TableCell>
+
                   <TableCell>
                     <b>Employee ID</b>
                   </TableCell>
+
                   <TableCell>
                     <b>Verified At</b>
                   </TableCell>
@@ -228,7 +290,9 @@ export default function Report() {
                 {data.map((row) => (
                   <TableRow key={row.id} hover>
                     <TableCell>{row.full_name}</TableCell>
+
                     <TableCell>{row.id_number}</TableCell>
+
                     <TableCell>
                       {row.scanned_at
                         ? new Date(row.scanned_at).toLocaleString()

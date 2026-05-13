@@ -75,7 +75,8 @@ export default function TodayScanned() {
 
         const normalized = (result.users || result || []).map((s, i) => ({
           id: s.id || i,
-          full_name: s.full_name || s.name || "Unknown",
+          user_name: s.user_name || s.name || "Unknown",
+          phone_number: s.phone_number || "N/A",
           id_number: s.id_number || "N/A",
           verified_at: s.verified_at || s.created_at || "-",
         }));
@@ -102,6 +103,9 @@ export default function TodayScanned() {
     return data.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);
   }, [data, page]);
 
+  console.log("*****************paginated****************");
+  console.log(paginatedData);
+  console.log("*****************paginated****************");
   // ==========================
   // UI
   // ==========================
@@ -154,6 +158,9 @@ export default function TodayScanned() {
                     <TableCell>
                       <b>Employee ID</b>
                     </TableCell>
+                    <TableCell>
+                      <b>Phone number</b>
+                    </TableCell>
 
                     <TableCell>
                       <b>Scanned At</b>
@@ -164,9 +171,10 @@ export default function TodayScanned() {
                 <TableBody>
                   {paginatedData.map((row) => (
                     <TableRow hover key={row.id}>
-                      <TableCell>{row.full_name}</TableCell>
+                      <TableCell>{row.user_name}</TableCell>
 
                       <TableCell>{row.id_number}</TableCell>
+                      <TableCell>{row.phone_number}</TableCell>
 
                       <TableCell>{formatDateTime(row.verified_at)}</TableCell>
                     </TableRow>
