@@ -60,7 +60,14 @@ export default function Overview() {
 
   return (
     <Stack spacing={3} sx={{ justifyContent: "center", alignItems: "center" }}>
-      <Typography variant="h4" fontWeight={700}>
+      <Typography
+        variant="h4"
+        fontWeight={600}
+        sx={{
+          fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
+          letterSpacing: 0.6,
+        }}
+      >
         System Overview
       </Typography>
 

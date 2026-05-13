@@ -89,15 +89,19 @@ export default function Dashboard() {
       <Box sx={{ p: 3 }}>
         <Typography
           variant="h5"
-          fontWeight={800}
+          fontWeight={600}
           sx={{
             fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
-            letterSpacing: 0.5,
+            letterSpacing: 0.6,
           }}
         >
           MIG Verify
         </Typography>
-        <Typography variant="caption" color="text.secondary">
+        <Typography
+          variant="caption"
+          sx={{ fontWeight: 600 }}
+          color="text.secondary"
+        >
           ADMIN CONTROL
         </Typography>
       </Box>
