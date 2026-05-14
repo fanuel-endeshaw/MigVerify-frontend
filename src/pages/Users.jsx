@@ -50,7 +50,8 @@ const normalizeUser = (s = {}) => ({
     `USR-${Math.random().toString(36).substr(2, 9)}`,
   name: s.name || s.fullName || s.full_name || "Unknown User",
   id_number: s.id_number ?? s.idNumber ?? "",
-  qrToken: s.qr_token,
+
+  phone_number: s.phone_number ?? "",
 });
 
 export default function Users() {
@@ -65,7 +66,7 @@ export default function Users() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [toast, setToast] = useState("");
 
-  // ✅ FIX: useRef instead of getElementById
+  //  FIX: useRef instead of getElementById
   const qrRef = useRef(null);
 
   useEffect(() => {
@@ -161,10 +162,25 @@ export default function Users() {
     <Box sx={{ p: 2, maxWidth: 1200, mx: "auto" }}>
       <Stack direction="row" justifyContent="space-between" mb={4}>
         <Box>
-          <Typography variant="h4" fontWeight={800}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
+              letterSpacing: 0.6,
+              color: "#004d40",
+              fontWeight: 500,
+            }}
+          >
             User Management
           </Typography>
-          <Typography color="text.secondary">
+          <Typography
+            color="text.secondary"
+            sx={{
+              fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
+              fontWeight: 500,
+              fontSize: 18,
+            }}
+          >
             Manage identity profiles
           </Typography>
         </Box>
@@ -193,7 +209,7 @@ export default function Users() {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => navigate("/dashboard/registration")}
-          sx={{ background: "black" }}
+          sx={{ background: "#004d40" }}
         >
           Register
         </Button>
@@ -212,8 +228,8 @@ export default function Users() {
               <TableHead>
                 <TableRow>
                   <TableCell>User</TableCell>
-                  <TableCell>ID</TableCell>
                   <TableCell>Employee ID</TableCell>
+                  <TableCell>Phone Number</TableCell>
                   <TableCell align="right">Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -228,8 +244,8 @@ export default function Users() {
                       </Stack>
                     </TableCell>
 
-                    <TableCell>{user.id}</TableCell>
                     <TableCell>{user.id_number}</TableCell>
+                    <TableCell>{user.phone_number}</TableCell>
 
                     <TableCell align="right">
                       <IconButton onClick={() => setSelectedUser(user)}>
@@ -294,6 +310,9 @@ export default function Users() {
                 <Typography color="text.secondary">
                   {selectedUser.id_number}
                 </Typography>
+                <Typography color="text.secondary">
+                  {selectedUser.phone_number}
+                </Typography>
               </Box>
 
               <Card sx={{ width: "100%" }}>
@@ -303,14 +322,14 @@ export default function Users() {
                   </Typography>
 
                   <Typography color="text.secondary">
-                    QR Token: {selectedUser.qr_token}
+                    QR Token: {selectedUser.id_number}
                   </Typography>
 
                   <Box textAlign="center">
-                    {selectedUser.qrToken ? (
+                    {selectedUser.id_number ? (
                       <QRCodeCanvas
-                        ref={qrRef} // ✅ FIXED
-                        value={selectedUser.qrToken}
+                        ref={qrRef} //  FIXED
+                        value={selectedUser.id_number}
                         size={200}
                         level="H"
                         includeMargin

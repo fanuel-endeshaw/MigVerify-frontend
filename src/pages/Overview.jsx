@@ -66,6 +66,8 @@ export default function Overview() {
         sx={{
           fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
           letterSpacing: 0.6,
+          color: "#004d40",
+          fontWeight: 500,
         }}
       >
         System Overview
@@ -81,8 +83,8 @@ export default function Overview() {
       ) : (
         <Grid container spacing={2}>
           {[
-            { label: "Total Users", value: totalUsers },
-            { label: "Today Scans", value: todayScans },
+            { label: "Total Employees", value: totalUsers || 0 },
+            { label: "Today Scans", value: todayScans || 0 },
             // Future cards can be added here.
           ].map((card) => (
             <Grid key={card.label} xs={12} sm={6} lg={3}>

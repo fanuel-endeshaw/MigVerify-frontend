@@ -44,7 +44,7 @@ export default function Dashboard() {
       },
       {
         id: "users",
-        label: "Users",
+        label: "Employees",
         path: "/dashboard/users",
         icon: <GroupOutlinedIcon sx={{ color: "black" }} />,
       },
@@ -85,7 +85,15 @@ export default function Dashboard() {
   };
 
   const navigationContent = (
-    <>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        bgcolor: "#004d40",
+        height: "100vh",
+      }}
+    >
       <Box sx={{ p: 3 }}>
         <Typography
           variant="h5"
@@ -93,36 +101,46 @@ export default function Dashboard() {
           sx={{
             fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
             letterSpacing: 0.6,
+            color: "#ffffffff",
           }}
         >
           MIG Verify
         </Typography>
-        <Typography
-          variant="caption"
-          sx={{ fontWeight: 600 }}
-          color="text.secondary"
-        >
+        <Typography variant="caption" sx={{ fontWeight: 700, color: "white" }}>
           ADMIN CONTROL
         </Typography>
       </Box>
-      <List>
+      <List sx={{ marginTop: 5 }}>
         {navItems.map((item) => (
           <ListItemButton
             key={item.id}
             selected={activeTab === item.id}
             onClick={() => handleNavChange(item.path)}
             sx={{
-              color: "black",
+              marginTop: 1,
+              color: "white",
               "&.Mui-selected": {
-                borderLeft: "7px solid #000000",
-                "&:hover": {
-                  color: "white",
-                },
+                borderLeft: "7px solid #ffffffff",
+                bgcolor: "#ffffff59",
+              },
+              "&:hover": {
+                bgcolor: "#ffffff25", // Faint white background on hover
+                // color: "#ffffff",
               },
             }}
           >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
+            <ListItemIcon sx={{ "& svg": { color: "#ffffffff !important" } }}>
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText
+              sx={{
+                "& .MuiListItemText-primary": {
+                  fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
+                  color: "#ffffffff",
+                },
+              }}
+              primary={item.label}
+            />
           </ListItemButton>
         ))}
       </List>
@@ -131,12 +149,12 @@ export default function Dashboard() {
           fullWidth
           startIcon={<LogoutOutlinedIcon />}
           onClick={logout}
-          color="inherit"
+          sx={{ color: "white" }}
         >
           Sign Out
         </Button>
       </Box>
-    </>
+    </Box>
   );
 
   return (

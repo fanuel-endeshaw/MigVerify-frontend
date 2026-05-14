@@ -27,17 +27,17 @@ export default function AppRoutes() {
         <Route
           path="/"
           element={
-            // <ProtectedRoute>
-            <Navigate to="/dashboard" replace />
-            //</ProtectedRoute>
+            <ProtectedRoute>
+              <Navigate to="/dashboard" replace />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/dashboard"
           element={
-            // <ProtectedRoute>
-            <Dashboard />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
           }
         >
           <Route index element={<Overview />} />

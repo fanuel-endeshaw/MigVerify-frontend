@@ -45,8 +45,8 @@ export default function Login() {
         display: "grid",
         placeItems: "center",
         px: 2,
-        // background: "green",
-        background: "linear-gradient(180deg, #F5F8FF 0%, #ECF1FF 100%)",
+        // background: "",
+        background: "linear-gradient(45deg, #004d40 55%, #D4AF37 45%)",
       }}
     >
       <Paper sx={{ p: 4, width: "100%", maxWidth: 420 }}>
@@ -65,6 +65,7 @@ export default function Login() {
               sx={{
                 fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
                 letterSpacing: 0.4,
+                color: "#004d40",
               }}
             >
               MIG ID Verification
@@ -93,11 +94,12 @@ export default function Login() {
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, password: event.target.value }))
                 }
+                sx={{ mb: 1 }}
               />
               <Button
                 type="submit"
                 variant="contained"
-                sx={{ bgcolor: "black" }}
+                sx={{ bgcolor: "#004d40" }}
                 disabled={loading}
                 size="large"
               >

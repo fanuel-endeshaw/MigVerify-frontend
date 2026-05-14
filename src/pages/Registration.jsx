@@ -28,7 +28,7 @@ export default function Registration() {
   const [form, setForm] = useState({
     fullName: "",
     id_number: "",
-    dateOfBirth: "",
+    phone_number: "",
     address: "",
     photo: "",
     photoFile: null,
@@ -49,7 +49,7 @@ export default function Registration() {
     setForm({
       fullName: "",
       id_number: "",
-      dateOfBirth: "",
+      phone_number: "",
       address: "",
       photo: "",
       photoFile: null,
@@ -96,7 +96,7 @@ export default function Registration() {
 
       payload.append("full_name", form.fullName);
       payload.append("id_number", form.id_number);
-      payload.append("date_of_birth", form.dateOfBirth);
+      payload.append("phone_number", form.phone_number);
       payload.append("address", form.address);
       payload.append("photo", form.photoFile);
 
@@ -125,7 +125,16 @@ export default function Registration() {
   return (
     <Box sx={{ p: 2 }}>
       <Box sx={{ maxWidth: 900 }}>
-        <Typography variant="h4" fontWeight={700} mb={3}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
+            letterSpacing: 0.6,
+            fontWeight: 500,
+            color: "#004d40",
+          }}
+          mb={3}
+        >
           New User Registration
         </Typography>
 
@@ -167,23 +176,10 @@ export default function Registration() {
                 />
 
                 <TextField
-                  type="date"
-                  label="Date of Birth"
+                  label="Phone Number"
                   fullWidth
-                  value={form.dateOfBirth}
-                  sx={{
-                    // 1. Hide the placeholder text when not focused and empty
-                    "& input::-webkit-datetime-edit-month-field, & input::-webkit-datetime-edit-day-field, & input::-webkit-datetime-edit-year-field, & input::-webkit-datetime-edit-text":
-                      {
-                        color: form.dateOfBirth ? "inherit" : "transparent",
-                      },
-                    // 2. Show the placeholder text when focused
-                    "&:focus-within input::-webkit-datetime-edit-month-field, &:focus-within input::-webkit-datetime-edit-day-field, &:focus-within input::-webkit-datetime-edit-year-field, &:focus-within input::-webkit-datetime-edit-text":
-                      {
-                        color: "inherit",
-                      },
-                  }}
-                  onChange={handleChange("dateOfBirth")}
+                  value={form.phone_number}
+                  onChange={handleChange("phone_number")}
                 />
 
                 <TextField
@@ -204,8 +200,9 @@ export default function Registration() {
                       sx={{
                         borderRadius: 2,
                         textTransform: "none",
-                        borderColor: "grey.400",
-                        color: "text.secondary",
+                        // borderColor: "grey.400",
+                        color: "#004d40",
+                        borderColor: "#004d40",
                       }}
                     >
                       Clear
@@ -227,7 +224,7 @@ export default function Registration() {
                       sx={{
                         borderRadius: 2,
                         textTransform: "none",
-                        backgroundColor: "black",
+                        backgroundColor: "#004d40",
                       }}
                     >
                       {registrationLoading ? "Processing..." : "Complete"}
@@ -273,7 +270,9 @@ export default function Registration() {
                     }}
                   />
                 ) : (
-                  <UploadFileOutlinedIcon sx={{ fontSize: 50 }} />
+                  <UploadFileOutlinedIcon
+                    sx={{ fontSize: 50, color: "#004d40" }}
+                  />
                 )}
               </Box>
 
@@ -281,7 +280,7 @@ export default function Registration() {
                 component="label"
                 variant="outlined"
                 fullWidth
-                sx={{ borderColor: "black", color: "black" }}
+                sx={{ color: "#004d40", borderColor: "#004d40" }}
                 startIcon={<UploadFileOutlinedIcon />}
               >
                 Upload Photo

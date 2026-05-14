@@ -111,7 +111,16 @@ export default function TodayScanned() {
   // ==========================
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" fontWeight={700} mb={2}>
+      <Typography
+        variant="h4"
+        sx={{
+          fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
+          letterSpacing: 0.6,
+          color: "#004d40",
+          fontWeight: 500,
+        }}
+        mb={2}
+      >
         Today Scanned Users
       </Typography>
 

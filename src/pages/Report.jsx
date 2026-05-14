@@ -161,7 +161,16 @@ export default function Report() {
   // ==========================
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
+      <Typography
+        variant="h4"
+        sx={{
+          fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
+          letterSpacing: 0.6,
+          color: "#004d40",
+          fontWeight: 500,
+          mb: 1,
+        }}
+      >
         Reports
       </Typography>
 
