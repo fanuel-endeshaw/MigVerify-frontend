@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Paper,
   Typography,
@@ -11,8 +12,8 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
-  Alert,
   TextField,
+  Pagination,
 } from "@mui/material";
 
 import { useEffect, useState } from "react";
@@ -20,115 +21,108 @@ import { useAuth } from "../auth/useAuth";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
+const apiBaseUrl = "http://192.168.1.53:5000";
+
 const outfitFont = {
   fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
 };
+
 export default function Report() {
   const { token } = useAuth();
 
-  const [rawData, setRawData] = useState([]);
   const [data, setData] = useState([]);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // ==========================
-  // FETCH DATA
+  // FETCH REPORT
   // ==========================
-  useEffect(() => {
-    let active = true;
+  const fetchReport = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-    const fetchReport = async () => {
-      try {
-        setLoading(true);
-        setError("");
+      let endpoint = "";
 
-        const res = await fetch(
-          `http://192.168.1.53:5000/api/history/all-scans`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
-
-        const result = await res.json();
-
-        if (!res.ok) {
-          throw new Error(result.message || "Failed to fetch report");
-        }
-
-        const normalized = (result.users || result || []).map((r, i) => ({
-          id: r.id || i,
-          full_name: r.full_name || "Unknown",
-          id_number: r.id_number || "N/A",
-          scanned_at: r.verified_at || null,
-        }));
-
-        if (active) {
-          setRawData(normalized);
-        }
-      } catch (err) {
-        if (active) setError(err.message);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-
-    fetchReport();
-
-    return () => {
-      active = false;
-    };
-  }, [token]);
-
-  //#################################
-
-  // FILTER LOGIC
-
-  useEffect(() => {
-    let filtered = [...rawData];
-
-    filtered = filtered.filter((item) => {
-      if (!item.scanned_at) return false;
-
-      const scanDate = new Date(item.scanned_at);
-
-      // START DATE
+      // ==========================
+      // FILTERED API
+      // ==========================
       if (startDate) {
-        const start = new Date(startDate);
-        start.setHours(0, 0, 0, 0);
+        endpoint = `${apiBaseUrl}/api/history/scans-by-date-range?startDate=${startDate}`;
 
-        if (scanDate < start) return false;
+        if (endDate) {
+          endpoint += `&endDate=${endDate}`;
+        }
+      } else {
+        // prevent only endDate
+        if (endDate) {
+          alert("Start date is required.");
+          setEndDate("");
+          return;
+        }
+
+        // ==========================
+        // NORMAL PAGINATION API
+        // ==========================
+        endpoint = `${apiBaseUrl}/api/history/all-scans/${page}`;
       }
 
-      // END DATE
-      if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
+      const res = await fetch(endpoint, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        if (scanDate > end) return false;
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message || "Failed to fetch report");
       }
 
-      return true;
-    });
+      const normalized = (result.users || []).map((r, i) => ({
+        id: r.id || i,
+        full_name: r.user_name || r.full_name || "Unknown",
+        id_number: r.id_number || "N/A",
+        scanned_at: r.verified_at || null,
+        phone_number: r.phone_number || "",
+      }));
 
-    setData(filtered);
-  }, [startDate, endDate, rawData]);
+      setData(normalized);
 
-  // ==========================
-  // CLEAR FILTERS
-
-  const clearFilters = () => {
-    setStartDate("");
-    setEndDate("");
+      // pagination pages
+      setPages(result.pages || 1);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ==========================
-  // EXPORT TO EXCEL
+  // FETCH ON CHANGE
+  // ==========================
+  useEffect(() => {
+    fetchReport();
+  }, [page, startDate, endDate]);
+
+  // ==========================
+  // CLEAR FILTERS
+  // ==========================
+  const clearFilters = () => {
+    setStartDate("");
+    setEndDate("");
+    setPage(1);
+  };
+
+  // ==========================
+  // EXPORT EXCEL
   // ==========================
   const exportToExcel = () => {
     if (!data.length) return;
@@ -136,7 +130,8 @@ export default function Report() {
     const worksheet = XLSX.utils.json_to_sheet(
       data.map((d) => ({
         Full_Name: d.full_name,
-        ID_Number: d.id_number,
+        Employee_ID: d.id_number,
+        Phone_Number: d.phone_number,
         Verified_At: d.scanned_at
           ? new Date(d.scanned_at).toLocaleString()
           : "Not Verified",
@@ -156,21 +151,18 @@ export default function Report() {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
-    saveAs(file, `report.xlsx`);
+    saveAs(file, "report.xlsx");
   };
 
-  // ==========================
-  // UI
-  // ==========================
   return (
     <Box sx={{ p: 2 }}>
       <Typography
         variant="h4"
         sx={{
-          fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
+          fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
           letterSpacing: 0.6,
           color: "#004d40",
-          fontWeight: 500,
+          fontWeight: 700,
           mb: 1,
         }}
       >
@@ -184,23 +176,34 @@ export default function Report() {
         mb={3}
         alignItems={{ sm: "center" }}
       >
+        {/* START DATE */}
         <TextField
           label="Start Date"
           type="date"
           value={startDate}
-          sx={{ ...outfitFont }}
-          onChange={(e) => setStartDate(e.target.value)}
+          onChange={(e) => {
+            setPage(1);
+            setStartDate(e.target.value);
+          }}
           InputLabelProps={{
             shrink: true,
           }}
           sx={{
             minWidth: 200,
-            // 1. Hide the placeholder text when not focused and empty
+
+            "& input": {
+              ...outfitFont,
+            },
+
+            "& label": {
+              ...outfitFont,
+            },
+
             "& input::-webkit-datetime-edit-month-field, & input::-webkit-datetime-edit-day-field, & input::-webkit-datetime-edit-year-field, & input::-webkit-datetime-edit-text":
               {
                 color: startDate ? "inherit" : "transparent",
               },
-            // 2. Show the placeholder text when focused
+
             "&:focus-within input::-webkit-datetime-edit-month-field, &:focus-within input::-webkit-datetime-edit-day-field, &:focus-within input::-webkit-datetime-edit-year-field, &:focus-within input::-webkit-datetime-edit-text":
               {
                 color: "inherit",
@@ -208,22 +211,34 @@ export default function Report() {
           }}
         />
 
+        {/* END DATE */}
         <TextField
           label="End Date"
           type="date"
           value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
+          onChange={(e) => {
+            setPage(1);
+            setEndDate(e.target.value);
+          }}
           InputLabelProps={{
             shrink: true,
           }}
           sx={{
             minWidth: 200,
-            // 1. Hide the placeholder text when not focused and empty
+
+            "& input": {
+              ...outfitFont,
+            },
+
+            "& label": {
+              ...outfitFont,
+            },
+
             "& input::-webkit-datetime-edit-month-field, & input::-webkit-datetime-edit-day-field, & input::-webkit-datetime-edit-year-field, & input::-webkit-datetime-edit-text":
               {
                 color: endDate ? "inherit" : "transparent",
               },
-            // 2. Show the placeholder text when focused
+
             "&:focus-within input::-webkit-datetime-edit-month-field, &:focus-within input::-webkit-datetime-edit-day-field, &:focus-within input::-webkit-datetime-edit-year-field, &:focus-within input::-webkit-datetime-edit-text":
               {
                 color: "inherit",
@@ -231,6 +246,7 @@ export default function Report() {
           }}
         />
 
+        {/* CLEAR */}
         <Button
           variant="outlined"
           onClick={clearFilters}
@@ -238,6 +254,10 @@ export default function Report() {
             color: "black",
             borderColor: "black",
             height: 56,
+            textTransform: "none",
+            fontWeight: 600,
+            ...outfitFont,
+
             "&:hover": {
               borderColor: "black",
               backgroundColor: "rgba(0,0,0,0.05)",
@@ -247,6 +267,7 @@ export default function Report() {
           Clear Filters
         </Button>
 
+        {/* EXPORT */}
         <Button
           variant="contained"
           color="success"
@@ -254,6 +275,9 @@ export default function Report() {
           disabled={!data.length}
           sx={{
             height: 56,
+            textTransform: "none",
+            fontWeight: 600,
+            ...outfitFont,
           }}
         >
           Export Excel
@@ -261,78 +285,110 @@ export default function Report() {
       </Stack>
 
       <Paper>
+        {/* LOADING */}
         {loading && (
           <Stack direction="row" spacing={1} sx={{ p: 2, mt: 1 }}>
             <CircularProgress size={18} sx={{ color: "black" }} />
-            <Typography variant="caption">Loading report...</Typography>
+
+            <Typography variant="caption" sx={outfitFont}>
+              Loading report...
+            </Typography>
           </Stack>
         )}
 
+        {/* ERROR */}
         {error && (
           <Alert sx={{ p: 2, mt: 1 }} severity="error">
             {error}
           </Alert>
         )}
 
+        {/* EMPTY */}
         {!loading && data.length === 0 && (
           <Box textAlign="center" sx={{ p: 2, mt: 1 }}>
-            <Typography color="text.secondary" sx={{ ...outfitFont }}>
+            <Typography color="text.secondary" sx={outfitFont}>
               No records found
             </Typography>
           </Box>
         )}
 
+        {/* TABLE */}
         {data.length > 0 && (
-          <TableContainer sx={{ mt: 1 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell
-                    sx={{
-                      ...outfitFont,
-                      fontWeight: 700,
-                    }}
-                  >
-                    Full Name
-                  </TableCell>
+          <>
+            <TableContainer sx={{ mt: 1 }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        ...outfitFont,
+                        fontWeight: 700,
+                      }}
+                    >
+                      Full Name
+                    </TableCell>
 
-                  <TableCell
-                    sx={{
-                      ...outfitFont,
-                      fontWeight: 700,
-                    }}
-                  >
-                    Employee ID
-                  </TableCell>
+                    <TableCell
+                      sx={{
+                        ...outfitFont,
+                        fontWeight: 700,
+                      }}
+                    >
+                      Employee ID
+                    </TableCell>
 
-                  <TableCell
-                    sx={{
-                      ...outfitFont,
-                      fontWeight: 700,
-                    }}
-                  >
-                    Verified At
-                  </TableCell>
-                </TableRow>
-              </TableHead>
+                    <TableCell
+                      sx={{
+                        ...outfitFont,
+                        fontWeight: 700,
+                      }}
+                    >
+                      Phone Number
+                    </TableCell>
 
-              <TableBody>
-                {data.map((row) => (
-                  <TableRow key={row.id} hover>
-                    <TableCell sx={outfitFont}>{row.full_name}</TableCell>
-
-                    <TableCell sx={outfitFont}>{row.id_number}</TableCell>
-
-                    <TableCell sx={outfitFont}>
-                      {row.scanned_at
-                        ? new Date(row.scanned_at).toLocaleString()
-                        : "Not Verified"}
+                    <TableCell
+                      sx={{
+                        ...outfitFont,
+                        fontWeight: 700,
+                      }}
+                    >
+                      Verified At
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+
+                <TableBody>
+                  {data.map((row) => (
+                    <TableRow key={row.id} hover>
+                      <TableCell sx={outfitFont}>{row.full_name}</TableCell>
+
+                      <TableCell sx={outfitFont}>{row.id_number}</TableCell>
+
+                      <TableCell sx={outfitFont}>{row.phone_number}</TableCell>
+
+                      <TableCell sx={outfitFont}>
+                        {row.scanned_at
+                          ? new Date(row.scanned_at).toLocaleString()
+                          : "Not Verified"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {/* PAGINATION */}
+            {!startDate && (
+              <Stack direction="row" justifyContent="flex-end" sx={{ p: 2 }}>
+                <Pagination
+                  count={pages}
+                  page={page}
+                  onChange={(_, value) => setPage(value)}
+                  color="primary"
+                />
+              </Stack>
+            )}
+          </>
         )}
       </Paper>
     </Box>

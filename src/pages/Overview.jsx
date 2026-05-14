@@ -102,8 +102,8 @@ export default function Overview() {
                     variant="h4"
                     sx={{
                       fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
+                      fontWeight: 700,
                     }}
-                    fontWeight={700}
                   >
                     {card.value}
                   </Typography>
