@@ -277,7 +277,14 @@ export default function Users() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={outfitFont}>User</TableCell>
+                  <TableCell
+                    sx={{
+                      ...outfitFont,
+                      fontWeight: 700,
+                    }}
+                  >
+                    User
+                  </TableCell>
 
                   <TableCell sx={outfitFont}>Employee ID</TableCell>
 

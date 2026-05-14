@@ -20,6 +20,9 @@ import { useAuth } from "../auth/useAuth";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
+const outfitFont = {
+  fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
+};
 export default function Report() {
   const { token } = useAuth();
 
@@ -185,6 +188,7 @@ export default function Report() {
           label="Start Date"
           type="date"
           value={startDate}
+          sx={{ ...outfitFont }}
           onChange={(e) => setStartDate(e.target.value)}
           InputLabelProps={{
             shrink: true,
@@ -272,7 +276,9 @@ export default function Report() {
 
         {!loading && data.length === 0 && (
           <Box textAlign="center" sx={{ p: 2, mt: 1 }}>
-            <Typography color="text.secondary">No records found</Typography>
+            <Typography color="text.secondary" sx={{ ...outfitFont }}>
+              No records found
+            </Typography>
           </Box>
         )}
 
@@ -281,16 +287,31 @@ export default function Report() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>
-                    <b>Full Name</b>
+                  <TableCell
+                    sx={{
+                      ...outfitFont,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Full Name
                   </TableCell>
 
-                  <TableCell>
-                    <b>Employee ID</b>
+                  <TableCell
+                    sx={{
+                      ...outfitFont,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Employee ID
                   </TableCell>
 
-                  <TableCell>
-                    <b>Verified At</b>
+                  <TableCell
+                    sx={{
+                      ...outfitFont,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Verified At
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -298,11 +319,11 @@ export default function Report() {
               <TableBody>
                 {data.map((row) => (
                   <TableRow key={row.id} hover>
-                    <TableCell>{row.full_name}</TableCell>
+                    <TableCell sx={outfitFont}>{row.full_name}</TableCell>
 
-                    <TableCell>{row.id_number}</TableCell>
+                    <TableCell sx={outfitFont}>{row.id_number}</TableCell>
 
-                    <TableCell>
+                    <TableCell sx={outfitFont}>
                       {row.scanned_at
                         ? new Date(row.scanned_at).toLocaleString()
                         : "Not Verified"}

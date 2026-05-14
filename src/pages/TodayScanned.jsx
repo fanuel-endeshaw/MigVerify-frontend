@@ -18,6 +18,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 
 const ROWS_PER_PAGE = 6;
+const outfitFont = {
+  fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
+};
 
 export default function TodayScanned() {
   const { token } = useAuth();
@@ -133,7 +136,9 @@ export default function TodayScanned() {
             spacing={1}
           >
             <CircularProgress sx={{ color: "black" }} size={18} />
-            <Typography variant="caption">Fetching data...</Typography>
+            <Typography variant="caption" sx={{ ...outfitFont }}>
+              Fetching data...
+            </Typography>
           </Stack>
         )}
 
@@ -147,7 +152,7 @@ export default function TodayScanned() {
         {/* EMPTY */}
         {!loading && !error && data.length === 0 && (
           <Box textAlign="center" sx={{ padding: 2, mt: 1 }}>
-            <Typography color="text.secondary">
+            <Typography color="text.secondary" sx={{ ...outfitFont }}>
               No scans found for today
             </Typography>
           </Box>
@@ -160,19 +165,39 @@ export default function TodayScanned() {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>
-                      <b>Full Name</b>
+                    <TableCell
+                      sx={{
+                        ...outfitFont,
+                        fontWeight: 700,
+                      }}
+                    >
+                      Full Name
                     </TableCell>
 
-                    <TableCell>
-                      <b>Employee ID</b>
+                    <TableCell
+                      sx={{
+                        ...outfitFont,
+                        fontWeight: 700,
+                      }}
+                    >
+                      Employee ID
                     </TableCell>
-                    <TableCell>
-                      <b>Phone number</b>
+                    <TableCell
+                      sx={{
+                        ...outfitFont,
+                        fontWeight: 700,
+                      }}
+                    >
+                      Phone number
                     </TableCell>
 
-                    <TableCell>
-                      <b>Scanned At</b>
+                    <TableCell
+                      sx={{
+                        ...outfitFont,
+                        fontWeight: 700,
+                      }}
+                    >
+                      Scanned At
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -180,12 +205,14 @@ export default function TodayScanned() {
                 <TableBody>
                   {paginatedData.map((row) => (
                     <TableRow hover key={row.id}>
-                      <TableCell>{row.user_name}</TableCell>
+                      <TableCell sx={outfitFont}>{row.user_name}</TableCell>
 
-                      <TableCell>{row.id_number}</TableCell>
-                      <TableCell>{row.phone_number}</TableCell>
+                      <TableCell sx={outfitFont}>{row.id_number}</TableCell>
+                      <TableCell sx={outfitFont}>{row.phone_number}</TableCell>
 
-                      <TableCell>{formatDateTime(row.verified_at)}</TableCell>
+                      <TableCell sx={outfitFont}>
+                        {formatDateTime(row.verified_at)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
