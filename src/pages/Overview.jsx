@@ -90,8 +90,21 @@ export default function Overview() {
             <Grid key={card.label} xs={12} sm={6} lg={3}>
               <Card>
                 <CardContent>
-                  <Typography color="text.secondary">{card.label}</Typography>
-                  <Typography variant="h4" fontWeight={700}>
+                  <Typography
+                    color="text.secondary"
+                    sx={{
+                      fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
+                    }}
+                  >
+                    {card.label}
+                  </Typography>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
+                    }}
+                    fontWeight={700}
+                  >
                     {card.value}
                   </Typography>
                 </CardContent>

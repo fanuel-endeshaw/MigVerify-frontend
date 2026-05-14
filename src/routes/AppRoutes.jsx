@@ -42,7 +42,8 @@ export default function AppRoutes() {
         >
           <Route index element={<Overview />} />
           <Route path="users" element={<Users />} />
-          <Route path="registration" element={<Registration />} />
+          <Route path="userManagment" element={<Registration />} />
+          <Route path="userManagment/:id" element={<Registration />} />
           <Route path="today-scanned" element={<TodayScanned />} />
           <Route path="report" element={<Report />} />
           {/* <Route path="*" element={<Navigate to="/dashboard" replace />} /> */}

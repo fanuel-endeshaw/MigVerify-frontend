@@ -49,9 +49,9 @@ export default function Dashboard() {
         icon: <GroupOutlinedIcon sx={{ color: "black" }} />,
       },
       {
-        id: "registration",
-        label: "Registration",
-        path: "/dashboard/registration",
+        id: "userManagment",
+        label: "User Managment",
+        path: "/dashboard/userManagment",
         icon: <PersonAddAlt1OutlinedIcon sx={{ color: "black" }} />,
       },
       {
@@ -72,7 +72,7 @@ export default function Dashboard() {
 
   const activeTab = useMemo(() => {
     if (pathname.startsWith("/dashboard/users")) return "users";
-    if (pathname.startsWith("/dashboard/registration")) return "registration";
+    if (pathname.startsWith("/dashboard/userManagment")) return "userManagment";
     if (pathname.startsWith("/dashboard/today-scanned")) return "todayScanned";
     if (pathname.startsWith("/dashboard/report")) return "report";
     // if (pathname.startsWith("/dashboard/admin-profile")) return "adminProfile";
