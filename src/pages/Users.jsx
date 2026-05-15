@@ -184,7 +184,7 @@ export default function Users() {
         ...outfitFont,
       }}
     >
-      <Stack direction="row" justifyContent="space-between" mb={4}>
+      <Stack direction="row" sx={{ justifyContent: "space-between", mb: 1.5 }}>
         <Box>
           <Typography
             variant="h4"
@@ -221,7 +221,6 @@ export default function Users() {
         direction={{ xs: "column", md: "row" }}
         sx={{ mt: 1, mb: 1 }}
         spacing={2}
-        mb={3}
       >
         <TextField
           placeholder="Search..."
@@ -300,7 +299,11 @@ export default function Users() {
                 {paginatedUsers.map((user) => (
                   <TableRow key={user.id} hover>
                     <TableCell>
-                      <Stack direction="row" spacing={2} alignItems="center">
+                      <Stack
+                        direction="row"
+                        spacing={2}
+                        sx={{ alignItems: "center" }}
+                      >
                         <Avatar
                           sx={{
                             bgcolor: "#004d40",
@@ -357,9 +360,8 @@ export default function Users() {
         <Stack
           direction="row"
           justifyContent="space-between"
-          p={2}
           sx={{
-            padding: 1,
+            padding: 2,
             alignItems: "center",
           }}
         >
@@ -368,6 +370,7 @@ export default function Users() {
             sx={{
               ...outfitFont,
               fontWeight: 500,
+              fontSize: 14,
             }}
           >
             Total: {filteredUsers.length}
@@ -403,7 +406,7 @@ export default function Users() {
 
         <DialogContent>
           {selectedUser && (
-            <Stack spacing={3} alignItems="center" py={2}>
+            <Stack spacing={3} sx={{ py: 1 }}>
               <Box
                 component={"img"}
                 src={selectedUser.photo_url}

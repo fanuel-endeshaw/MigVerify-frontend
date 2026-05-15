@@ -31,10 +31,10 @@ export default function Overview() {
         const list = data?.user || data || [];
         if (mounted) setUsers(list);
         const data2 = await fetchCount(token);
-        console.log("count");
+        // console.log("count");
         setTodayScans(data2);
-        console.log(data2);
-        console.log("count");
+        // console.log(data2);
+        // console.log("count");
       } catch (e) {
         if (mounted) {
           setError(e?.message || "Failed to load overview data.");
@@ -75,8 +75,13 @@ export default function Overview() {
 
       {loading ? (
         <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-          <CircularProgress size={24} />
-          <Typography color="text.secondary">Loading...</Typography>
+          <CircularProgress color="#004d40" size={24} />
+          <Typography
+            color="text.secondary"
+            sx={{ fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif' }}
+          >
+            Loading...
+          </Typography>
         </Stack>
       ) : error ? (
         <Typography color="error">{error}</Typography>

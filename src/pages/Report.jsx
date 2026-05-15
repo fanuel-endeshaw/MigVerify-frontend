@@ -52,10 +52,10 @@ export default function Report() {
       let endpoint = "";
 
       // ==========================
-      // FILTERED API
+      // FILTERED API WITH PAGINATION
       // ==========================
       if (startDate) {
-        endpoint = `${apiBaseUrl}/api/history/scans-by-date-range?startDate=${startDate}`;
+        endpoint = `${apiBaseUrl}/api/history/scans-by-date-range?page=${page}&startDate=${startDate}`;
 
         if (endDate) {
           endpoint += `&endDate=${endDate}`;
@@ -123,47 +123,109 @@ export default function Report() {
 
   // ==========================
   // EXPORT EXCEL
-  // ==========================
-  const exportToExcel = () => {
-    if (!data.length) return;
 
-    const worksheet = XLSX.utils.json_to_sheet(
-      data.map((d) => ({
-        Full_Name: d.full_name,
-        Employee_ID: d.id_number,
-        Phone_Number: d.phone_number,
-        Verified_At: d.scanned_at
-          ? new Date(d.scanned_at).toLocaleString()
-          : "Not Verified",
-      })),
-    );
+  const exportToExcel = async () => {
+    try {
+      setLoading(true);
 
-    const workbook = XLSX.utils.book_new();
+      let allRows = [];
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+      // loop through pages from 1 -> current selected page
+      for (let currentPage = 1; currentPage <= page; currentPage++) {
+        let endpoint = "";
 
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
+        // ==========================
+        // FILTERED EXPORT
+        // ==========================
+        if (startDate) {
+          endpoint = `${apiBaseUrl}/api/history/scans-by-date-range?startDate=${startDate}&page=${currentPage}`;
 
-    const file = new Blob([excelBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
+          if (endDate) {
+            endpoint += `&endDate=${endDate}`;
+          }
+        } else {
+          // ==========================
+          // NORMAL EXPORT
+          // ==========================
+          endpoint = `${apiBaseUrl}/api/history/all-scans/${currentPage}`;
+        }
 
-    saveAs(file, "report.xlsx");
+        const res = await fetch(endpoint, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result.message || "Export failed");
+        }
+
+        const normalized = (result.users || []).map((r, i) => ({
+          id: r.id || i,
+          full_name: r.user_name || r.full_name || "Unknown",
+          id_number: r.id_number || "N/A",
+          phone_number: r.phone_number || "",
+          scanned_at: r.verified_at || null,
+        }));
+
+        allRows = [...allRows, ...normalized];
+      }
+
+      // ==========================
+      // CREATE SHEET
+      // ==========================
+      const worksheet = XLSX.utils.json_to_sheet(
+        allRows.map((d) => ({
+          Full_Name: d.full_name,
+          Employee_ID: d.id_number,
+          Phone_Number: d.phone_number,
+          Verified_At: d.scanned_at
+            ? new Date(d.scanned_at).toLocaleString()
+            : "Not Verified",
+        })),
+      );
+
+      const workbook = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
+
+      const file = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      saveAs(file, `report-page-1-to-${page}.xlsx`);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Box sx={{ p: 2 }}>
+      {/* TITLE */}
       <Typography
         variant="h4"
+        // sx={{
+        //   fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
+        //   letterSpacing: 0.6,
+        //   color: "#004d40",
+        //   fontWeight: 700,
+        //   mb: 2,
+        // }}
         sx={{
-          fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
+          fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
           letterSpacing: 0.6,
           color: "#004d40",
-          fontWeight: 700,
-          mb: 1,
+          fontWeight: 500,
+          mb: 2,
         }}
       >
         Reports
@@ -246,7 +308,7 @@ export default function Report() {
           }}
         />
 
-        {/* CLEAR */}
+        {/* CLEAR BUTTON */}
         <Button
           variant="outlined"
           onClick={clearFilters}
@@ -267,7 +329,7 @@ export default function Report() {
           Clear Filters
         </Button>
 
-        {/* EXPORT */}
+        {/* EXPORT BUTTON */}
         <Button
           variant="contained"
           color="success"
@@ -284,10 +346,17 @@ export default function Report() {
         </Button>
       </Stack>
 
-      <Paper>
+      {/* TABLE CONTAINER */}
+      <Paper
+        sx={{
+          borderRadius: 1,
+          mt: 1,
+          overflow: "hidden",
+        }}
+      >
         {/* LOADING */}
         {loading && (
-          <Stack direction="row" spacing={1} sx={{ p: 2, mt: 1 }}>
+          <Stack direction="row" spacing={1} sx={{ p: 2 }}>
             <CircularProgress size={18} sx={{ color: "black" }} />
 
             <Typography variant="caption" sx={outfitFont}>
@@ -298,14 +367,14 @@ export default function Report() {
 
         {/* ERROR */}
         {error && (
-          <Alert sx={{ p: 2, mt: 1 }} severity="error">
+          <Alert sx={{ p: 2 }} severity="error">
             {error}
           </Alert>
         )}
 
         {/* EMPTY */}
         {!loading && data.length === 0 && (
-          <Box textAlign="center" sx={{ p: 2, mt: 1 }}>
+          <Box sx={{ p: 3, textAlign: "center" }}>
             <Typography color="text.secondary" sx={outfitFont}>
               No records found
             </Typography>
@@ -315,7 +384,7 @@ export default function Report() {
         {/* TABLE */}
         {data.length > 0 && (
           <>
-            <TableContainer sx={{ mt: 1 }}>
+            <TableContainer>
               <Table>
                 <TableHead>
                   <TableRow>
@@ -378,16 +447,13 @@ export default function Report() {
             </TableContainer>
 
             {/* PAGINATION */}
-            {!startDate && (
-              <Stack direction="row" justifyContent="flex-end" sx={{ p: 2 }}>
-                <Pagination
-                  count={pages}
-                  page={page}
-                  onChange={(_, value) => setPage(value)}
-                  color="primary"
-                />
-              </Stack>
-            )}
+            <Stack direction="row" justifyContent="flex-end" sx={{ p: 2 }}>
+              <Pagination
+                count={pages}
+                page={page}
+                onChange={(_, value) => setPage(value)}
+              />
+            </Stack>
           </>
         )}
       </Paper>
