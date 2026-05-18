@@ -30,9 +30,7 @@ export default function TodayScanned() {
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
 
-  // ==========================
-  // FORMAT DATE
-  // ==========================
+  //dateformat
   const formatDateTime = (dateString) => {
     if (!dateString || dateString === "-") return "-";
 
@@ -49,9 +47,7 @@ export default function TodayScanned() {
     });
   };
 
-  // ==========================
-  // FETCH FROM BACKEND
-  // ==========================
+  //fetching logic (be)
   useEffect(() => {
     let active = true;
 
@@ -99,19 +95,17 @@ export default function TodayScanned() {
     };
   }, [token]);
 
-  // ==========================
-  // PAGINATION
-  // ==========================
+  // paginations
+
   const paginatedData = useMemo(() => {
     return data.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);
   }, [data, page]);
 
-  console.log("*****************paginated****************");
-  console.log(paginatedData);
-  console.log("*****************paginated****************");
+  // console.log("*****************paginated****************");
+  // console.log(paginatedData);
+  // console.log("*****************paginated****************");
   // ==========================
-  // UI
-  // ==========================
+
   return (
     <Box sx={{ p: 2 }}>
       <Typography
@@ -151,7 +145,7 @@ export default function TodayScanned() {
 
         {/* EMPTY */}
         {!loading && !error && data.length === 0 && (
-          <Box textAlign="center" sx={{ padding: 2, mt: 1 }}>
+          <Box sx={{ padding: 2, mt: 1, textAlign: "center" }}>
             <Typography color="text.secondary" sx={{ ...outfitFont }}>
               No scans found for today
             </Typography>

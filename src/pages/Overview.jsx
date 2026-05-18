@@ -90,7 +90,8 @@ export default function Overview() {
           {[
             { label: "Total Employees", value: totalUsers || 0 },
             { label: "Today Scans", value: todayScans || 0 },
-            // Future cards can be added here.
+            // check
+            // future cards can be added .
           ].map((card) => (
             <Grid key={card.label} xs={12} sm={6} lg={3}>
               <Card>

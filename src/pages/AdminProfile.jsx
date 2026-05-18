@@ -9,7 +9,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { decodeToken } from "../auth/session"; // adjust path
+import { decodeToken } from "../auth/session";
 
 export default function AdminProfile() {
   const admin = decodeToken();

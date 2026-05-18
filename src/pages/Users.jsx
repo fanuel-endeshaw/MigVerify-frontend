@@ -264,7 +264,7 @@ export default function Users() {
         }}
       >
         {loading ? (
-          <Box textAlign="center" sx={{ mt: 1, padding: 2 }}>
+          <Box sx={{ mt: 1, padding: 2, textAlign: "center" }}>
             <CircularProgress size={24} sx={{ color: "black" }} />
           </Box>
         ) : error ? (
@@ -359,10 +359,10 @@ export default function Users() {
 
         <Stack
           direction="row"
-          justifyContent="space-between"
           sx={{
             padding: 2,
             alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
           <Typography
@@ -418,7 +418,7 @@ export default function Users() {
                 }}
               />
 
-              <Box textAlign="center">
+              <Box sx={{ textAlign: "left" }}>
                 <Typography
                   variant="h5"
                   sx={{
@@ -466,7 +466,7 @@ export default function Users() {
                     QR Token: {selectedUser.id_number}
                   </Typography>
 
-                  <Box textAlign="center">
+                  <Box sx={{ textAlign: "center" }}>
                     {selectedUser.id_number ? (
                       <QRCodeCanvas
                         ref={qrRef}

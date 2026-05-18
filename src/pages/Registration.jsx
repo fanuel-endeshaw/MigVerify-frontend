@@ -293,9 +293,8 @@ export default function Registration() {
 
         <Box component="form" sx={{ mt: 2 }} onSubmit={handleCreateUser}>
           <Stack
-            direction={{ xs: "column", md: "row" }}
+            direction={{ xs: "column", md: "row", alignItems: "stretch" }}
             spacing={3}
-            alignItems="stretch"
           >
             {/* LEFT */}
             <Paper
