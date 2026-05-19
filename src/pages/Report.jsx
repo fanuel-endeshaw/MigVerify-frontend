@@ -21,7 +21,7 @@ import { useAuth } from "../auth/useAuth";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-const apiBaseUrl = "http://192.168.1.53:5000";
+const apiBaseUrl = "http://192.168.1.61:5000";
 
 const outfitFont = {
   fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
@@ -123,31 +123,21 @@ export default function Report() {
 
   // ==========================
   // EXPORT EXCEL
-
+  // ==========================
   const exportToExcel = async () => {
     try {
       setLoading(true);
 
       let allRows = [];
 
-      // loop through pages from 1 -> current selected page
-      for (let currentPage = 1; currentPage <= page; currentPage++) {
-        let endpoint = "";
+      // ==========================================
+      // EXPORT FILTERED DATA (NO PAGINATION)
+      // ==========================================
+      if (startDate) {
+        let endpoint = `${apiBaseUrl}/api/report/download?startDate=${startDate}`;
 
-        // ==========================
-        // FILTERED EXPORT
-        // ==========================
-        if (startDate) {
-          endpoint = `${apiBaseUrl}/api/history/scans-by-date-range?startDate=${startDate}&page=${currentPage}`;
-
-          if (endDate) {
-            endpoint += `&endDate=${endDate}`;
-          }
-        } else {
-          // ==========================
-          // NORMAL EXPORT
-          // ==========================
-          endpoint = `${apiBaseUrl}/api/history/all-scans/${currentPage}`;
+        if (endDate) {
+          endpoint += `&endDate=${endDate}`;
         }
 
         const res = await fetch(endpoint, {
@@ -162,34 +152,65 @@ export default function Report() {
           throw new Error(result.message || "Export failed");
         }
 
-        const normalized = (result.users || []).map((r, i) => ({
-          id: r.id || i,
-          full_name: r.user_name || r.full_name || "Unknown",
-          id_number: r.id_number || "N/A",
-          phone_number: r.phone_number || "",
-          scanned_at: r.verified_at || null,
+        allRows = (result.users || []).map((r, i) => ({
+          No: i + 1,
+          Full_Name: r.user_name || r.full_name || "Unknown",
+          Employee_ID: r.id_number || "N/A",
+          Phone_Number: r.phone_number || "",
+          Verified_At: r.verified_at
+            ? new Date(r.verified_at).toLocaleString()
+            : "Not Verified",
         }));
+      } else {
+        // ==========================================
+        // EXPORT FROM PAGE 1 -> CURRENT PAGE
+        // ==========================================
+        for (let currentPage = 1; currentPage <= page; currentPage++) {
+          const endpoint = `${apiBaseUrl}/api/history/all-scans/${currentPage}`;
 
-        allRows = [...allRows, ...normalized];
+          const res = await fetch(endpoint, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const result = await res.json();
+
+          if (!res.ok) {
+            throw new Error(result.message || "Export failed");
+          }
+
+          const normalized = (result.users || []).map((r, i) => ({
+            No: allRows.length + i + 1,
+            Full_Name: r.user_name || r.full_name || "Unknown",
+            Employee_ID: r.id_number || "N/A",
+            Phone_Number: r.phone_number || "",
+            Verified_At: r.verified_at
+              ? new Date(r.verified_at).toLocaleString()
+              : "Not Verified",
+          }));
+
+          allRows = [...allRows, ...normalized];
+        }
       }
 
-      // ==========================
-      // CREATE SHEET
-      // ==========================
-      const worksheet = XLSX.utils.json_to_sheet(
-        allRows.map((d) => ({
-          Full_Name: d.full_name,
-          Employee_ID: d.id_number,
-          Phone_Number: d.phone_number,
-          Verified_At: d.scanned_at
-            ? new Date(d.scanned_at).toLocaleString()
-            : "Not Verified",
-        })),
-      );
+      // ==========================================
+      // CREATE EXCEL SHEET
+      // ==========================================
+      const worksheet = XLSX.utils.json_to_sheet(allRows);
+
+      // OPTIONAL COLUMN WIDTHS
+      worksheet["!cols"] = [
+        { wch: 8 },
+        { wch: 30 },
+        { wch: 20 },
+        { wch: 20 },
+        { wch: 28 },
+      ];
 
       const workbook = XLSX.utils.book_new();
 
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Reports");
 
       const excelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
@@ -200,7 +221,18 @@ export default function Report() {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      saveAs(file, `report-page-1-to-${page}.xlsx`);
+      // ==========================================
+      // FILE NAME
+      // ==========================================
+      let fileName = `reports-page-1-to-${page}.xlsx`;
+
+      if (startDate && endDate) {
+        fileName = `reports-${startDate}-to-${endDate}.xlsx`;
+      } else if (startDate) {
+        fileName = `reports-from-${startDate}.xlsx`;
+      }
+
+      saveAs(file, fileName);
     } catch (err) {
       alert(err.message);
     } finally {
@@ -213,13 +245,6 @@ export default function Report() {
       {/* TITLE */}
       <Typography
         variant="h4"
-        // sx={{
-        //   fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
-        //   letterSpacing: 0.6,
-        //   color: "#004d40",
-        //   fontWeight: 700,
-        //   mb: 2,
-        // }}
         sx={{
           fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
           letterSpacing: 0.6,

@@ -6,7 +6,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchCount, fetchUsers } from "../auth/session";
 import { useAuth } from "../auth/useAuth";
 

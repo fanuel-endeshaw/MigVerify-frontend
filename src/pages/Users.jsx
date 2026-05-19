@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  MenuItem,
   Pagination,
   Paper,
   Snackbar,
@@ -35,12 +36,12 @@ import {
 } from "@mui/icons-material";
 
 import { deleteUserBackend, fetchUsers } from "../auth/session";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { useAuth } from "../auth/useAuth";
 import { useNavigate } from "react-router-dom";
 
-const USERS_PER_PAGE = 8;
+const USERS_PER_PAGE = 10;
 
 const normalizeUser = (s = {}) => ({
   ...s,
@@ -49,9 +50,14 @@ const normalizeUser = (s = {}) => ({
     s.user_id ||
     s.uuid ||
     `USR-${Math.random().toString(36).substr(2, 9)}`,
+
   name: s.name || s.fullName || s.full_name || "Unknown User",
+
   id_number: s.id_number ?? s.idNumber ?? "",
+
   phone_number: s.phone_number ?? "",
+
+  created_at: s.created_at || s.createdAt || new Date().toISOString(),
 });
 
 const outfitFont = {
@@ -64,9 +70,13 @@ export default function Users() {
 
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+
+  const [sortBy, setSortBy] = useState("newest");
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const [selectedUser, setSelectedUser] = useState(null);
   const [toast, setToast] = useState("");
 
@@ -80,11 +90,16 @@ export default function Users() {
         setLoading(true);
 
         const data = await fetchUsers(token);
+
         const list = data?.user || data || [];
 
-        if (active) setUsers(list.map(normalizeUser));
+        if (active) {
+          setUsers(list.map(normalizeUser));
+        }
       } catch (err) {
-        if (active) setError(err.message || "Failed to sync users.");
+        if (active) {
+          setError(err.message || "Failed to sync users.");
+        }
       } finally {
         if (active) setLoading(false);
       }
@@ -97,15 +112,47 @@ export default function Users() {
     };
   }, [token]);
 
+  // FILTER + SORT
   const filteredUsers = useMemo(() => {
     const q = query.toLowerCase();
 
-    return users.filter(
+    let filtered = users.filter(
       (u) =>
         u.name.toLowerCase().includes(q) ||
         u.id_number.toLowerCase().includes(q),
     );
-  }, [users, query]);
+
+    switch (sortBy) {
+      case "name-asc":
+        return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+
+      case "name-desc":
+        return [...filtered].sort((a, b) => b.name.localeCompare(a.name));
+
+      case "newest":
+        return [...filtered].sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at),
+        );
+
+      case "oldest":
+        return [...filtered].sort(
+          (a, b) => new Date(a.created_at) - new Date(b.created_at),
+        );
+
+      case "id-asc":
+        return [...filtered].sort((a, b) =>
+          a.id_number.localeCompare(b.id_number),
+        );
+
+      case "id-desc":
+        return [...filtered].sort((a, b) =>
+          b.id_number.localeCompare(a.id_number),
+        );
+
+      default:
+        return filtered;
+    }
+  }, [users, query, sortBy]);
 
   const paginatedUsers = filteredUsers.slice(
     (page - 1) * USERS_PER_PAGE,
@@ -126,7 +173,6 @@ export default function Users() {
     }
   };
 
-  // ✅ UPDATE ACTION
   const handleUpdate = (user) => {
     navigate(`/dashboard/userManagment/${user.id}`, {
       state: user,
@@ -136,10 +182,7 @@ export default function Users() {
   const handleShareQR = async () => {
     const canvas = qrRef.current;
 
-    if (!canvas) {
-      console.error("Canvas not found");
-      return;
-    }
+    if (!canvas) return;
 
     try {
       const dataUrl = canvas.toDataURL("image/png");
@@ -161,16 +204,13 @@ export default function Users() {
         });
       } else {
         const link = document.createElement("a");
-
         link.href = dataUrl;
         link.download = `${selectedUser?.name || "qr"}-code.png`;
-
         link.click();
 
-        setToast("Sharing not supported. QR downloaded instead.");
+        setToast("Downloaded instead of sharing");
       }
     } catch (err) {
-      console.error("Sharing failed:", err);
       setToast("Failed to share QR");
     }
   };
@@ -184,16 +224,11 @@ export default function Users() {
         ...outfitFont,
       }}
     >
+      {/* HEADER */}
       <Stack direction="row" sx={{ justifyContent: "space-between", mb: 1.5 }}>
         <Box>
           <Typography
             variant="h4"
-            // sx={{
-            //   ...outfitFont,
-            //   letterSpacing: 0.6,
-            //   color: "#004d40",
-            //   fontWeight: 700,
-            // }}
             sx={{
               fontFamily: '"Lilita One", "Inter", "Segoe UI", sans-serif',
               letterSpacing: 0.6,
@@ -204,24 +239,14 @@ export default function Users() {
             User Management
           </Typography>
 
-          <Typography
-            color="text.secondary"
-            sx={{
-              ...outfitFont,
-              fontWeight: 500,
-              fontSize: 18,
-            }}
-          >
+          <Typography color="text.secondary">
             Manage identity profiles
           </Typography>
         </Box>
       </Stack>
 
-      <Stack
-        direction={{ xs: "column", md: "row" }}
-        sx={{ mt: 1, mb: 1 }}
-        spacing={2}
-      >
+      {/* SEARCH + SORT */}
+      <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ my: 2 }}>
         <TextField
           placeholder="Search..."
           value={query}
@@ -229,27 +254,37 @@ export default function Users() {
             setQuery(e.target.value);
             setPage(1);
           }}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ mr: 1 }} />,
-            sx: {
-              ...outfitFont,
-            },
-          }}
-          sx={{
-            flex: 1,
-            "& input": {
-              ...outfitFont,
+          sx={{ flex: 1 }}
+          slotProps={{
+            input: {
+              startAdornment: <SearchIcon sx={{ mr: 1 }} />,
             },
           }}
         />
+
+        <TextField
+          select
+          value={sortBy}
+          onChange={(e) => {
+            setSortBy(e.target.value);
+            setPage(1);
+          }}
+          sx={{ minWidth: 200 }}
+        >
+          <MenuItem value="newest">Newest</MenuItem>
+          <MenuItem value="oldest">Oldest</MenuItem>
+          <MenuItem value="name-asc">Name A-Z</MenuItem>
+          <MenuItem value="name-desc">Name Z-A</MenuItem>
+          <MenuItem value="id-asc">ID ↑</MenuItem>
+          <MenuItem value="id-desc">ID ↓</MenuItem>
+        </TextField>
+
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => navigate("/dashboard/userManagment")}
           sx={{
             background: "#004d40",
-            ...outfitFont,
-            fontWeight: 600,
             textTransform: "none",
           }}
         >
@@ -257,6 +292,7 @@ export default function Users() {
         </Button>
       </Stack>
 
+      {/* TABLE */}
       <Paper
         sx={{
           borderRadius: 1,

@@ -17,7 +17,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 
-const ROWS_PER_PAGE = 6;
+const ROWS_PER_PAGE = 10;
 const outfitFont = {
   fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
 };
@@ -56,7 +56,7 @@ export default function TodayScanned() {
         setLoading(true);
 
         const res = await fetch(
-          "http://192.168.1.53:5000/api/history/today-scans",
+          "http://192.168.1.61:5000/api/history/today-scans",
           {
             headers: {
               Authorization: `Bearer ${token}`,
