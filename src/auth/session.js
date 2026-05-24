@@ -1,7 +1,9 @@
 // ==========================
 // CONFIG
 // ==========================
-const API_BASE_URL = "http://192.168.1.61:5000";
+import { BASE_URL } from "../config";
+// const API_BASE_URL = "http://192.168.1.79:5000";
+const API_BASE_URL = BASE_URL;
 const TOKEN_KEY = "id_verify_token";
 
 // ==========================

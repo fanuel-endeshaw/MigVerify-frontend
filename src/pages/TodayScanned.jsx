@@ -13,7 +13,7 @@ import {
   Stack,
   Alert,
 } from "@mui/material";
-
+import { BASE_URL } from "../config";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 
@@ -56,7 +56,8 @@ export default function TodayScanned() {
         setLoading(true);
 
         const res = await fetch(
-          "http://192.168.1.61:5000/api/history/today-scans",
+          // "http://192.168.1.79:5000/api/history/today-scans",
+          `${BASE_URL}/api/history/today-scans`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

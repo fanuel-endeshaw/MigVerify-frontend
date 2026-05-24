@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { AuthContext } from "./AuthContextCore";
 import { jwtDecode } from "jwt-decode";
+import { BASE_URL } from "../config";
 
 export const AuthProvider = ({ children }) => {
+  const api_base_url = BASE_URL;
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -30,7 +32,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const res = await fetch("http://192.168.1.61:5000/api/admins/login", {
+      // const res = await fetch("http://192.168.1.79:5000/api/admins/login", {
+      const res = await fetch(`${api_base_url}/api/admins/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

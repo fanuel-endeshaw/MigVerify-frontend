@@ -13,7 +13,7 @@ import { useAuth } from "../auth/useAuth";
 export default function Overview() {
   const { token } = useAuth();
   const [users, setUsers] = useState([]);
-  const [todayScans, setTodayScans] = useState();
+  const [todayScans, setTodayScans] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -30,11 +30,20 @@ export default function Overview() {
         const data = await fetchUsers(token);
         const list = data?.user || data || [];
         if (mounted) setUsers(list);
-        const data2 = await fetchCount(token);
-        // console.log("count");
-        setTodayScans(data2);
+
+        // const data2 = await fetchCount(token);
+
         // console.log(data2);
-        // console.log("count");
+
+        // setTodayScans(data2);
+        const data2 = await fetchCount(token);
+
+        console.log("TODAY SCANS:", data2);
+
+        // handle different API response structures
+        const count = data2 ?? data2?.todayScans ?? data2?.total ?? 0;
+
+        setTodayScans(Number(count));
       } catch (e) {
         if (mounted) {
           setError(e?.message || "Failed to load overview data.");

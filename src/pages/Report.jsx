@@ -15,13 +15,14 @@ import {
   TextField,
   Pagination,
 } from "@mui/material";
+import { BASE_URL } from "../config";
 
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-const apiBaseUrl = "http://192.168.1.61:5000";
+const apiBaseUrl = BASE_URL;
 
 const outfitFont = {
   fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',
@@ -275,6 +276,11 @@ export default function Report() {
           InputLabelProps={{
             shrink: true,
           }}
+          slotProps={{
+            htmlInput: {
+              max: new Date().toLocaleDateString("en-CA"),
+            },
+          }}
           sx={{
             minWidth: 200,
 
@@ -309,6 +315,11 @@ export default function Report() {
           }}
           InputLabelProps={{
             shrink: true,
+          }}
+          slotProps={{
+            htmlInput: {
+              max: new Date().toLocaleDateString("en-CA"),
+            },
           }}
           sx={{
             minWidth: 200,

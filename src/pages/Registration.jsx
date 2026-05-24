@@ -17,8 +17,10 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 
 import { useAuth } from "../auth/useAuth";
+import { BASE_URL } from "../config";
 
-const apiBaseUrl = "http://192.168.1.61:5000";
+const apiBaseUrl = BASE_URL;
+// const apiBaseUrl = "http://192.168.1.79:5000";
 
 export default function Registration() {
   const navigate = useNavigate();
@@ -241,6 +243,8 @@ export default function Registration() {
       if (form.photoFile) {
         payload.append("photo", form.photoFile);
       }
+      // payload.append("photo_url", editUser.photo_url);
+      payload.append("photo_url", editUser?.photo_url || "");
 
       const endpoint = isEditMode
         ? `${apiBaseUrl}/api/users/update/${id}`

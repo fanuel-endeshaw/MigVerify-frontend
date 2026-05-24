@@ -8,6 +8,7 @@ import Registration from "../pages/Registration";
 import ProtectedRoute from "../components/ProtectedRoute";
 import TodayScanned from "../pages/TodayScanned";
 import Report from "../pages/Report";
+import ErrorPage from "../pages/ErrorPage";
 
 export default function AppRoutes() {
   return (
@@ -46,16 +47,18 @@ export default function AppRoutes() {
           <Route path="userManagment/:id" element={<Registration />} />
           <Route path="today-scanned" element={<TodayScanned />} />
           <Route path="report" element={<Report />} />
+          {/* <Route path="*" element={<ErrorPage />} /> */}
           {/* <Route path="*" element={<Navigate to="/dashboard" replace />} /> */}
         </Route>
-        <Route
+        <Route path="*" element={<ErrorPage />} />
+        {/* <Route
           path="*"
           element={
             <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>
           }
-        ></Route>
+        ></Route> */}
       </Routes>
     </BrowserRouter>
   );
