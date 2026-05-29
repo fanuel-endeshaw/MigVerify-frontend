@@ -12,17 +12,19 @@ import {
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+// import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 
 import { useAuth } from "../auth/useAuth";
-import { BASE_URL } from "../config";
+// import { BASE_URL } from "../config";
 
-const apiBaseUrl = BASE_URL;
+// const apiBaseUrl = BASE_URL;
 // const apiBaseUrl = "http://192.168.1.79:5000";
 
 export default function Registration() {
+  const apiBaseUrl = import.meta.env.VITE_BASE_URL;
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams();
@@ -62,9 +64,22 @@ export default function Registration() {
     }
   }, [isEditMode, editUser]);
 
-  // ==========================
+  // REMOVE PHOTO
+
+  const handleRemovePhoto = () => {
+    setForm((prev) => ({
+      ...prev,
+      photo: "",
+      photoFile: null,
+    }));
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   // INPUT SANITIZER
-  // ==========================
+
   const sanitizeInput = (field, value) => {
     let cleaned = value;
 
@@ -112,9 +127,8 @@ export default function Registration() {
     return cleaned;
   };
 
-  // ==========================
   // HANDLE CHANGE
-  // ==========================
+
   const handleChange = (field) => (e) => {
     const value = sanitizeInput(field, e.target.value);
 
@@ -124,9 +138,8 @@ export default function Registration() {
     }));
   };
 
-  // ==========================
   // RESET FORM
-  // ==========================
+
   const handleReset = () => {
     setRegistrationError("");
 
@@ -144,9 +157,8 @@ export default function Registration() {
     }
   };
 
-  // ==========================
   // PHOTO UPLOAD
-  // ==========================
+
   const handlePhotoUpload = (event) => {
     const file = event.target.files?.[0];
 
@@ -177,9 +189,8 @@ export default function Registration() {
     reader.readAsDataURL(file);
   };
 
-  // ==========================
   // VALIDATION
-  // ==========================
+
   const validateForm = () => {
     // FULL NAME
     if (!form.fullName.trim()) {
@@ -214,9 +225,8 @@ export default function Registration() {
     return null;
   };
 
-  // ==========================
   // SUBMIT
-  // ==========================
+
   const handleCreateUser = async (e) => {
     e.preventDefault();
 
@@ -243,8 +253,16 @@ export default function Registration() {
       if (form.photoFile) {
         payload.append("photo", form.photoFile);
       }
+      if (form.photo) {
+        payload.append("photo_url", editUser?.photo_url || "");
+      } else {
+        payload.append("photo_url", "");
+      }
       // payload.append("photo_url", editUser.photo_url);
-      payload.append("photo_url", editUser?.photo_url || "");
+      // if( form.photo=="" && form.photoFile==null){
+
+      // }
+      // payload.append("photo_url", editUser?.photo_url || null);
 
       const endpoint = isEditMode
         ? `${apiBaseUrl}/api/users/update/${id}`
@@ -544,6 +562,20 @@ export default function Registration() {
                   onChange={handlePhotoUpload}
                 />
               </Button>
+              {form.photo && (
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleRemovePhoto}
+                  sx={{
+                    minWidth: 55,
+                    borderRadius: 2,
+                    mt: 1,
+                  }}
+                >
+                  Remove Photo
+                </Button>
+              )}
             </Paper>
           </Stack>
         </Box>

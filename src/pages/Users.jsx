@@ -25,6 +25,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import placeholder from "../assets/placeholder.png";
 
 import {
   DeleteOutlined as DeleteIcon,
@@ -119,7 +120,8 @@ export default function Users() {
     let filtered = users.filter(
       (u) =>
         u.name.toLowerCase().includes(q) ||
-        u.id_number.toLowerCase().includes(q),
+        u.id_number.toLowerCase().includes(q) ||
+        u.phone_number.toLowerCase().includes(q),
     );
 
     switch (sortBy) {
@@ -445,7 +447,11 @@ export default function Users() {
             <Stack spacing={3} sx={{ py: 1 }}>
               <Box
                 component={"img"}
-                src={selectedUser.photo_url}
+                src={
+                  selectedUser.photo_url == null
+                    ? placeholder
+                    : selectedUser.photo_url
+                } //
                 sx={{
                   width: 170,
                   height: 170,

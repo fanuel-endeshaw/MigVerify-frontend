@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { AuthContext } from "./AuthContextCore";
 import { jwtDecode } from "jwt-decode";
-import { BASE_URL } from "../config";
+// import { BASE_URL } from "../config";
 
 export const AuthProvider = ({ children }) => {
-  const api_base_url = BASE_URL;
+  const api_base_url = import.meta.env.VITE_BASE_URL;
+  // const api_base_url = BASE_URL;
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -23,12 +24,11 @@ export const AuthProvider = ({ children }) => {
     if (token && isTokenValid(token)) {
       setIsAuthenticated(true);
     } else {
-      // ✅ only clear state here, no redirect
       localStorage.removeItem("token");
       setToken(null);
       setIsAuthenticated(false);
     }
-  }, [token]); // runs only when token changes
+  }, [token]);
 
   const login = async (email, password) => {
     try {
@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     setToken(null);
     setIsAuthenticated(false);
-    // ✅ redirect separately, not inside useEffect
+
     window.location.href = "/login";
   };
 

@@ -38,7 +38,7 @@ export default function Overview() {
         // setTodayScans(data2);
         const data2 = await fetchCount(token);
 
-        console.log("TODAY SCANS:", data2);
+        // console.log("TODAY SCANS:", data2);
 
         // handle different API response structures
         const count = data2 ?? data2?.todayScans ?? data2?.total ?? 0;

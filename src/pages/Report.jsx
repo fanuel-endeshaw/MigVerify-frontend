@@ -15,14 +15,15 @@ import {
   TextField,
   Pagination,
 } from "@mui/material";
-import { BASE_URL } from "../config";
+// import { BASE_URL } from "../config";
 
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-const apiBaseUrl = BASE_URL;
+// const apiBaseUrl = BASE_URL;
+const apiBaseUrl = import.meta.env.VITE_BASE_URL;
 
 const outfitFont = {
   fontFamily: '"Outfit", "Inter", "Segoe UI", sans-serif',

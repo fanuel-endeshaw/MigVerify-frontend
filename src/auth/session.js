@@ -1,9 +1,10 @@
 // ==========================
 // CONFIG
 // ==========================
-import { BASE_URL } from "../config";
+// import { BASE_URL } from "../config";
 // const API_BASE_URL = "http://192.168.1.79:5000";
-const API_BASE_URL = BASE_URL;
+// const API_BASE_URL = BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 const TOKEN_KEY = "id_verify_token";
 
 // ==========================
@@ -34,7 +35,7 @@ export async function loginWithBackend(email, password) {
       token: data.token,
     };
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     return {
       success: false,
       error: "Server error",
@@ -96,7 +97,7 @@ export async function fetchUsers(token) {
 
     return data;
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     return [];
   }
 }
@@ -116,7 +117,7 @@ export async function fetchCount(token) {
 
     return data.count;
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     return [];
   }
 }
@@ -180,7 +181,7 @@ export function decodeToken() {
     const decoded = JSON.parse(atob(payload));
     return decoded;
   } catch (error) {
-    console.error("Invalid token", error);
+    // console.error("Invalid token", error);
     return null;
   }
 }

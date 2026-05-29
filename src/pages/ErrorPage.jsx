@@ -28,12 +28,10 @@ export default function ErrorPage() {
           border: "1px solid #e0e0e0",
         }}
       >
-        {/* Force cross-axis centering inside the main layout stack */}
         <Stack
           spacing={3}
           sx={{ alignItems: "center", justifyContent: "center" }}
         >
-          {/* Centered Sign Circle Container */}
           <Box
             sx={{
               display: "flex",
@@ -44,7 +42,7 @@ export default function ErrorPage() {
               borderRadius: "50%",
               backgroundColor: "rgba(0, 51, 44, 0.05)",
               color: "#00332c",
-              // Ensures the inner icon cannot push boundaries
+
               overflow: "hidden",
             }}
           >
@@ -81,15 +79,14 @@ export default function ErrorPage() {
               color: "#ffffff",
               px: 4,
               py: 1.2,
-              borderRadius: 20, // Rounded pill shape matches your design perfectly
+              borderRadius: 20,
               textTransform: "none",
               fontWeight: 600,
               fontSize: "0.95rem",
               transition: "all 0.2s ease-in-out",
-              width: "100%", // Fits your clean button design width
+              width: "100%",
               maxWidth: 320,
               "&:hover": {
-                // Fixed the hover syntax bug here
                 backgroundColor: "#004d43",
                 transform: "translateY(-1px)",
                 boxShadow: "0px 4px 12px rgba(0, 51, 44, 0.2)",

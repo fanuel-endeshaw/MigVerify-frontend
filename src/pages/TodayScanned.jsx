@@ -13,7 +13,7 @@ import {
   Stack,
   Alert,
 } from "@mui/material";
-import { BASE_URL } from "../config";
+// import { BASE_URL } from "../config";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 
@@ -23,6 +23,9 @@ const outfitFont = {
 };
 
 export default function TodayScanned() {
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  // const BASE_URL = process.env.BASE_URL;
+  // console.log(BASE_URL);
   const { token } = useAuth();
 
   const [data, setData] = useState([]);
@@ -67,7 +70,7 @@ export default function TodayScanned() {
 
         const result = await res.json();
 
-        console.log(result);
+        // console.log(result);
 
         if (!res.ok) {
           throw new Error(result.message || "Failed to fetch");
@@ -217,8 +220,12 @@ export default function TodayScanned() {
             {/* PAGINATION */}
             <Stack
               direction="row"
-              justifyContent="space-between"
-              sx={{ padding: 1, alignItems: "center" }}
+              // justifyContent="space-between"
+              sx={{
+                padding: 1,
+                alignItems: "center",
+                // justifyContent: "center",
+              }}
             >
               <Typography variant="caption">Total: {data.length}</Typography>
 
